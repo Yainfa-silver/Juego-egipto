@@ -1,0 +1,84 @@
+====================================================================
+           TOMA DE REQUISITOS - LA PIRÁMIDE DE KHA-RA
+====================================================================
+
+1. DESCRIPCIÓN GENERAL DEL SISTEMA
+----------------------------------
+El sistema consiste en un de videojuego web 2D del género "Escape Room" 
+o "Point & Click", ambientado en una tumba del antiguo Egipto. 
+El jugador asume el rol de un arqueólogo/viajero que ha quedado atrapado 
+y dispone de un tiempo límite (15 minutos) para resolver una serie de 
+enigmas criptográficos basados en jeroglíficos para abrir la puerta principal 
+y escapar con vida.
+
+2. REQUISITOS FUNCIONALES (RF)
+------------------------------
+RF01 - Gestión de Usuarios: El sistema debe requerir un nombre de usuario ("viajero") 
+       al acceder. Debe almacenar este nombre y asociarlo con sus partidas.
+RF02 - Guardado y Reanudación de Partida: El sistema debe guardar el progreso 
+       de forma persistente en servidor. Si el usuario cierra el navegador o 
+       se desconecta, al iniciar sesión con el mismo nombre debe permitir 
+       "Continuar Partida" exactamente desde el estado, inventario y tiempo restante anterior.
+RF03 - Entorno de 5 Salas: El jugador debe poder navegar horizontalmente entre 5 estancias 
+       diferentes (Entrada, Archivo, Santuario, Cámara de Ofrendas, Tumba).
+RF04 - Cronómetro: Debe existir una cuenta atrás de 15 minutos en tiempo real. 
+       Al finalizar sin completar el puzzle, la partida debe concluir en "Game Over".
+RF05 - Generación Aleatoria (Rejugabilidad): Los objetos fundamentales para resolver 
+       los puzles (Diccionario, Papiro de Ra, Papiro de Osiris) deben distribuirse 
+       en posiciones que varían aleatoriamente entre las salas 2, 3, 4 y 5 al 
+       crear una nueva partida.
+RF06 - Sistema de Inventario: Debe existir un repositorio visual (HUD) donde los 
+       objetos recolectados por el jugador queden guardados y puedan ser inspeccionados 
+       haciendo clic en ellos (ej. abrir el visor del diccionario).
+RF07 - Resolución de Enigmas de Jeroglíficos: El sistema debe pedir combinaciones 
+       específicas de 3 jeroglíficos. Dichas combinaciones deben cambiar de 
+       forma pseudoaleatoria al iniciar un juego nuevo y validarse del lado del servidor.
+RF08 - Resolución del Meta-Puzzle Final: Completar los 3 micro-enigmas otorgará 
+       3 piezas de un altar antiguo. El jugador debe poder colocar las 3 piezas 
+       en sus correspondientes ranuras y confirmar la acción para ganar la partida.
+RF09 - Clasificación Global (Salón de la Fama): Mostrar los 10 mejores tiempos de escape 
+       en la pantalla de inicio, calculando el tiempo exacto desde el inicio de 
+       la partida hasta la resolución del meta-puzzle final.
+RF10 - Sistema de Audio y Ajustes: El juego debe contar con música temática de fondo 
+       que se reproduce automáticamente, junto con un menú de opciones integrado 
+       en la cabecera para pausar la reproducción y regular el volumen mediante una barra.
+
+
+3. REQUISITOS NO FUNCIONALES (RNF)
+----------------------------------
+RNF01 - Arquitectura Técnica: Aplicación web estructurada bajo patrón Cliente-Servidor. 
+        - Backend: Python v3 con micro-framework Flask (APIs RESTFUL). 
+        - Frontend: HTML5, Vanilla JavaScript, CSS3.
+        - Motor de Base de Datos: SQLite relacional (`usuarios` y `estado_partida`).
+RNF02 - Seguridad (Anti-Cheat): El front-end solo actúa como capa de proyección (View). 
+        El servidor es la fuente única de la verdad (SSoT). La verificación 
+        de jeroglíficos, control de llaves obtenidas, generación de coordenadas 
+        de objetos, dictamen de tiempo y validación de adyacencia espacial (movimiento 
+        solo entre salas continuas) debe ocurrir de forma estricta en el servidor y 
+        estar filtrada y oculta al cliente (Frontend) para evitar manipulación, 
+        teletransporte arbitrario o inspección de estado mediante red.
+RNF03 - Diseño Gráfico / UI: Interfaz oscura "Modo Oscuro" o "Dark Mode" con motivos egipcios. 
+        Predominancia de paleta negra/obsidiana y colores acento oro antiguo/arena. 
+        Botones con efectos Hover, transiciones suaves (CSS transitions) y uso 
+        de tipografía de corte clásico-monumental (ej. familia "Cinzel").
+RNF04 - Interactividad: Todo debe ocurrir a través de una Single Page Application (SPA), 
+        usando manipulación dinámica del DOM (`hidden` attribute) y llamadas `fetch` 
+        evitando así recargas completas de la página de inicio a fin de la partida.
+RNF05 - Usabilidad: Las áreas interactivas del escenario (objetos en las salas, flechas 
+        de navegación) deben contar con animaciones u opacidades que brinden feedback visual 
+        al jugador de que son elementos pulsables.
+
+4. REGLAS DE NEGOCIO / LÓGICA DE JUEGO
+--------------------------------------
+RN01 - Un objeto necesario para resolver un enigma no puede spawnear de forma 
+       inaccesible al jugador si este requiere resolver previamente dicho enigma. 
+       (Como el jugador tiene acceso libre de la Sala 1 a la 5 desde el inicio, esto no genera dead-locks).
+RN02 - El progreso no se puede reiniciar intencionadamente en mitad de la partida. 
+       Debe acabar por tiempo o por victoria para limpiarse del estado activo del usuario.
+
+5. ENTREGABLES REQUERIDOS
+-------------------------
+- Código fuente backend documentado y estructurado (`app.py`, módulos en `/game/`).
+- Código fuente frontend (archivos estáticos dentro de `/static/` y `/templates/`).
+- Base de datos local transaccional alojada en el servidor (archivo `.db`).
+- Activos estáticos visuales (imágenes de salas y UI) y sonoros (música de fondo).

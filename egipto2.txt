@@ -1,0 +1,37 @@
+se me ocurrio que podrias hacer un mini juego para buscar un texto secreto donde tengas que buscar los 
+gerogrificos por 3 habitaciones como maximo el texto puede tener 3 variantes dependiendo de la partida 
+y necesitas un diccionario de gerogrificos que encuentras en una de las salas 
+en cada sala hay una combinacion de gerogrificos los cuales cuando pones la combinacion correcta se acciona un boton 
+necesitas un total de 3 botones para poder salir de la piramide 
+a lo mejor un contador de tiempo el cual tengas un maximo de 5 minutos 
+
+para la activacion de cada boton tienes que responder una pregunta la cual tienes que aberiguar con el diccionario 
+e ingresar la respuesta correta pulsando los botones con los gerogrificos 
+los gerogrificos no se desbloquean hastas que no tienes el diccionario 
+el juego tiene que ser del estilo monkey island 
+tiene que tener una serie de enigmas / desafios 
+para resolver el ultimo puzle tienes que ir recogiendo piezas que se van desbloqueado para su recogida a lo largo de resolver los enigmas 
+y una de las piezas el usuario tiene que pulsar un boton oculto en la primera sala del juego 
+
+el enigma 1 : para resolverlo tienes que ir a la segunda sala a buscar un papiro el cual tienes que combinar con el diccionario para que el personaje sepa la combinacion y pueda pulsar el primer boton 
+cuando se pulsa el primer boton sale una parte del puzle para el puzle final 
+
+el enigma 2 : tienes que pulsar una combinacion de gerogrificos la cual esta en un papiro en la sala 3 
+te tiene que dejar ispeccionar el papiro para tu manualmente ingresar los gerogrificos para poder resover el enigma 2 
+cuando resuelves el acertijo 2 te da una pieza del puzle 
+
+el enigma 3 : tienes que poner piezas de un pizle las cuales se van recogiendo por los mapas el jugador tiene que ingresar el las piezas del puzle 
+cuando se completa el puzle se abre la puerta de escapada 
+
+
+
+el diccionario tiene que ser  el archivo file:diccionario.jpg
+
+las tecnologias a usuar :
+  -html css , jsc 
+  -python + flask
+  -sql little
+  
+
+
+

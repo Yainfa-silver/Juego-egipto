@@ -1,0 +1,173 @@
+Aquí tienes un **prompt completo y bien estructurado** que puedes usar para generar o desarrollar tu juego (por ejemplo con ChatGPT, un generador de código o como documento de diseño):
+
+---
+
+## 🎮 PROMPT PARA DESARROLLO DE MINI JUEGO
+
+Crea un **mini juego de aventuras estilo point & click inspirado en *Monkey Island***, ambientado en una pirámide egipcia, utilizando:
+
+* Frontend: **HTML, CSS, JavaScript**
+* Backend: **Python con Flask**
+* Base de datos: **SQLite**
+
+---
+
+## 🧩 DESCRIPCIÓN GENERAL
+
+El juego consiste en escapar de una pirámide explorando un máximo de **3 habitaciones**. El jugador debe resolver enigmas usando **jeroglíficos**, recolectar objetos y completar un puzzle final antes de que se acabe el tiempo.
+
+* ⏱ Tiempo límite: **5 minutos**
+* 🏺 Estilo: exploración, inventario, puzzles, narrativa ligera tipo aventura gráfica
+* 🔐 Objetivo: activar **3 botones** y completar un puzzle para abrir la salida
+
+---
+
+## 🗺️ ESTRUCTURA DEL JUEGO
+
+### 🏠 Habitaciones:
+
+1. **Sala 1 (inicio)**
+
+   * Contiene un **botón oculto**
+   * Algunos jeroglíficos visibles (no utilizables aún)
+   * Parte de un puzzle bloqueada
+
+2. **Sala 2**
+
+   * Contiene el **diccionario de jeroglíficos** (`file:diccionario.jpg`)
+   * Contiene un **papiro** necesario para el Enigma 1
+
+3. **Sala 3**
+
+   * Contiene un **papiro con combinación de jeroglíficos**
+   * Pieza del puzzle final
+
+---
+
+## 🔤 SISTEMA DE JEROGLÍFICOS
+
+* Los jeroglíficos están bloqueados hasta que el jugador obtiene el diccionario
+* El diccionario (`diccionario.jpg`) permite traducir símbolos a letras/palabras
+* El jugador introduce combinaciones mediante botones visuales
+
+---
+
+## 🧠 ENIGMAS
+
+### 🧩 Enigma 1:
+
+* Ir a Sala 2
+* Recoger papiro
+* Combinarlo con el diccionario
+* Descubrir la combinación correcta
+* Activar el botón 1
+* 🔓 Recompensa: pieza del puzzle final
+
+---
+
+### 🧩 Enigma 2:
+
+* Ir a Sala 3
+* Inspeccionar papiro
+* Introducir manualmente la combinación de jeroglíficos
+* Activar el botón 2
+* 🔓 Recompensa: pieza del puzzle
+
+---
+
+### 🧩 Enigma 3 (Final):
+
+* Recolectar todas las piezas del puzzle
+* Una pieza requiere pulsar un botón oculto en Sala 1
+* Completar el puzzle manualmente
+* 🔓 Resultado: se abre la puerta de escape
+
+---
+
+## 🎲 VARIABILIDAD
+
+* El texto secreto tiene **3 variantes diferentes** según la partida
+* Las combinaciones de jeroglíficos cambian en cada partida
+* Los puzzles deben ser rejugables
+
+---
+
+## 🎒 INVENTARIO
+
+* Sistema visual de objetos recogidos:
+
+  * Diccionario
+  * Papiros
+  * Piezas del puzzle
+
+---
+
+## 🧱 MECÁNICAS CLAVE
+
+* Interacción tipo point & click
+* Inspección de objetos
+* Combinación de objetos
+* Input de jeroglíficos mediante UI
+* Temporizador visible
+* Feedback visual/sonoro
+
+---
+
+## 🗄️ BASE DE DATOS (SQLite)
+
+Tablas sugeridas:
+
+* `players` (id, tiempo_restante, progreso)
+* `items` (id, nombre, recogido)
+* `puzzles` (id, estado, combinacion_correcta)
+* `game_state` (sala_actual, botones_activados)
+
+---
+
+## 🌐 BACKEND (Flask)
+
+Endpoints sugeridos:
+
+* `/start` → iniciar partida
+* `/move` → cambiar de sala
+* `/pickup` → recoger objeto
+* `/solve` → validar combinaciones
+* `/state` → estado actual del juego
+
+---
+
+## 🎨 FRONTEND
+
+* UI tipo aventura clásica (panel principal + inventario)
+* Sistema de escenas por sala
+* Modal para inspeccionar objetos
+* Botones interactivos para jeroglíficos
+* Puzzle drag & drop (opcional)
+
+---
+
+## 🔊 EXTRAS OPCIONALES
+
+* Música ambiental egipcia
+* Efectos de sonido al resolver enigmas
+* Sistema de pistas (opcional)
+
+---
+
+## 🎯 OBJETIVO FINAL
+
+El jugador debe:
+
+1. Conseguir el diccionario
+2. Resolver los 2 primeros enigmas
+3. Encontrar todas las piezas
+4. Completar el puzzle final
+5. Escapar antes de 5 minutos
+
+---
+
+Si quieres, puedo ahora:
+
+* Generarte directamente el **código base del juego**
+* Diseñar la **UI en HTML/CSS**
+* O hacerte un **prototipo funcional paso a paso** 🚀
