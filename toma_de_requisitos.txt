@@ -19,13 +19,14 @@ RF02 - Guardado y Reanudación de Partida: El sistema debe guardar el progreso
        de forma persistente en servidor. Si el usuario cierra el navegador o 
        se desconecta, al iniciar sesión con el mismo nombre debe permitir 
        "Continuar Partida" exactamente desde el estado, inventario y tiempo restante anterior.
-RF03 - Entorno de 5 Salas: El jugador debe poder navegar horizontalmente entre 5 estancias 
-       diferentes (Entrada, Archivo, Santuario, Cámara de Ofrendas, Tumba).
+RF03 - Entorno de 7 Salas: El jugador debe poder navegar horizontalmente entre 7 estancias 
+       diferentes (Entrada, Pasillo de Sirvientes, Archivo, Santuario Oscuro, Cámara de 
+       Ofrendas, Armería Real, Tumba Verdadera).
 RF04 - Cronómetro: Debe existir una cuenta atrás de 15 minutos en tiempo real. 
        Al finalizar sin completar el puzzle, la partida debe concluir en "Game Over".
 RF05 - Generación Aleatoria (Rejugabilidad): Los objetos fundamentales para resolver 
-       los puzles (Diccionario, Papiro de Ra, Papiro de Osiris) deben distribuirse 
-       en posiciones que varían aleatoriamente entre las salas 2, 3, 4 y 5 al 
+       los puzles (Diccionario, Papiro de Ra, Papiro de Osiris, Pesos de Anubis) deben distribuirse 
+       en posiciones que varían aleatoriamente a lo largo de las salas 2 a 7 al 
        crear una nueva partida.
 RF06 - Sistema de Inventario: Debe existir un repositorio visual (HUD) donde los 
        objetos recolectados por el jugador queden guardados y puedan ser inspeccionados 
@@ -49,8 +50,8 @@ RF12 - Múltiples Finales: La conclusión de la partida debe variar (Final Norma
        y si consiguió desbloquear la Reliquia Secreta.
 RF13 - Peligros Dinámicos (Trampas y Guardián): El juego debe castigar los errores del 
        jugador restándole tiempo (Trampa de Arena). Además, debe existir un Guardián 
-       errante que aparezca al azar mediante sonidos de pasos, forzando al jugador a 
-       esconderse en una sala segura bajo pena de Game Over inmediato.
+       errante que aparezca al azar (tras 3 minutos de gracia iniciales) mediante sonidos 
+       de pasos, forzando al jugador a esconderse en la sala de inicio previa muerte inminente.
 RF14 - Minijuegos Visuales: Debe existir un puzzle interactivo de interfaz gráfica 
        (Cerradura de cilindros) para obtener objetos de gran valor.
 

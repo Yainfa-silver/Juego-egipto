@@ -18,6 +18,7 @@ let selectedCraftItem = null;
 let guardianInterval = null;
 let guardianActive = false;
 let guardianTimeout = null;
+let guardianStartTimeout = null;
 
 // ─── Web Audio API SFX ──────────────────────────────────────────
 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -875,17 +876,23 @@ function closeAllModals() {
 // ═══════════════════════════════════════════════════════════════
 function startGuardianSystem() {
   clearInterval(guardianInterval);
+  clearTimeout(guardianStartTimeout);
   guardianActive = false;
-  guardianInterval = setInterval(() => {
-    if (gameState && !gameState.game_won && !gameState.game_over) {
-      triggerGuardian();
-    }
-  }, 45000 + Math.random() * 30000);
+  
+  // Wait 3 minutes (180,000 ms) before starting the random patrol interval
+  guardianStartTimeout = setTimeout(() => {
+    guardianInterval = setInterval(() => {
+      if (gameState && !gameState.game_won && !gameState.game_over) {
+        triggerGuardian();
+      }
+    }, 45000 + Math.random() * 30000);
+  }, 180000);
 }
 
 function stopGuardianSystem() {
   clearInterval(guardianInterval);
   clearTimeout(guardianTimeout);
+  clearTimeout(guardianStartTimeout);
   guardianActive = false;
 }
 
