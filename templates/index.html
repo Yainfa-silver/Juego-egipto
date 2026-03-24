@@ -6,6 +6,24 @@
   <title>La Pirámide de Kha-Ra — Escape Egipcio</title>
   <meta name="description" content="Mini juego de aventura point & click ambientado en una pirámide egipcia. Resuelve los enigmas, descifra los jeroglíficos y escapa antes de que se agote el tiempo." />
   <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+  @keyframes shakeConfig {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+  }
+  .shake-screen {
+    animation: shakeConfig 0.4s cubic-bezier(.36,.07,.19,.97) both infinite;
+  }
+  </style>
 </head>
 <body>
 
@@ -151,6 +169,8 @@
     <button class="nav-room-btn" id="nav-btn-3">🌟 Sala 3</button>
     <button class="nav-room-btn" id="nav-btn-4">⚖ Sala 4</button>
     <button class="nav-room-btn" id="nav-btn-5">👑 Sala 5</button>
+    <button class="nav-room-btn" id="nav-btn-6">⚔ Sala 6</button>
+    <button class="nav-room-btn" id="nav-btn-7">🏺 Sala 7</button>
   </footer>
 
 </div><!-- /screen-game -->
@@ -391,8 +411,57 @@
            <div class="map-node" id="map-node-2">2. Archivo</div><div class="map-line"></div>
            <div class="map-node" id="map-node-3">3. Santuario</div><div class="map-line"></div>
            <div class="map-node" id="map-node-4">4. Ofrendas</div><div class="map-line"></div>
-           <div class="map-node" id="map-node-5">5. Tumba</div>
+           <div class="map-node" id="map-node-5">5. Falsa Tumba</div><div class="map-line"></div>
+           <div class="map-node" id="map-node-6">6. Armería</div><div class="map-line"></div>
+           <div class="map-node" id="map-node-7">7. Tumba Verdadera</div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Minigame Lock -->
+  <div id="modal-minigame-lock" hidden>
+    <div class="modal" style="width:min(400px,90vw);">
+      <div class="modal-header">
+        <h2>🔒 Cofre Sellado</h2>
+        <button class="modal-close" onclick="closeModal('modal-minigame-lock')">✕</button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;">
+          Gira los anillos cilíndricos para alinear la combinación correcta. <br>Una pista: "La proporción divina circular".
+        </p>
+        <div style="display:flex; gap:1rem; justify-content:center; margin-bottom:1.5rem;">
+          <div class="cylinder-col">
+            <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(0, 1)">▲</button>
+            <div class="cylinder-val" id="cyl-val-0" style="font-size:2rem;font-family:'Cinzel',serif;color:var(--gold);margin:0.5rem 0;">0</div>
+            <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(0, -1)">▼</button>
+          </div>
+          <div class="cylinder-col">
+            <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(1, 1)">▲</button>
+            <div class="cylinder-val" id="cyl-val-1" style="font-size:2rem;font-family:'Cinzel',serif;color:var(--gold);margin:0.5rem 0;">0</div>
+            <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(1, -1)">▼</button>
+          </div>
+          <div class="cylinder-col">
+            <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(2, 1)">▲</button>
+            <div class="cylinder-val" id="cyl-val-2" style="font-size:2rem;font-family:'Cinzel',serif;color:var(--gold);margin:0.5rem 0;">0</div>
+            <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(2, -1)">▼</button>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="submitLock()">Alinear Cilindros</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Inspect Item -->
+  <div id="modal-inspect" hidden>
+    <div class="modal" style="width:min(400px,90vw);">
+      <div class="modal-header">
+        <h2 id="inspect-title">🔍 Inspeccionar Objeto</h2>
+        <button class="modal-close" onclick="closeModal('modal-inspect')">✕</button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <div id="inspect-icon" style="font-size:5rem; margin:1rem 0;">🧰</div>
+        <p id="inspect-desc" style="font-size:1rem; color:var(--sand); white-space:pre-wrap;"></p>
       </div>
     </div>
   </div>

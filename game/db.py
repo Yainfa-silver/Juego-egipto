@@ -52,7 +52,13 @@ def init_db():
             notes_read            TEXT    DEFAULT '[]',
             weights_collected     TEXT    DEFAULT '[]',
             anubis_solved         INTEGER DEFAULT 0,
-            pos_weights           TEXT
+            pos_weights           TEXT,
+            e1_code               TEXT,
+            e2_code               TEXT,
+            secret_text           TEXT,
+            has_secret_relic      INTEGER DEFAULT 0,
+            has_palo              INTEGER DEFAULT 0,
+            has_vendas            INTEGER DEFAULT 0
         )
     ''')
     
@@ -66,7 +72,13 @@ def init_db():
         "ALTER TABLE game_state ADD COLUMN weights_collected TEXT DEFAULT '[]'",
         "ALTER TABLE game_state ADD COLUMN anubis_solved INTEGER DEFAULT 0",
         "ALTER TABLE game_state ADD COLUMN pos_weights TEXT",
-        "ALTER TABLE users ADD COLUMN achievements TEXT DEFAULT '[]'"
+        "ALTER TABLE users ADD COLUMN achievements TEXT DEFAULT '[]'",
+        "ALTER TABLE game_state ADD COLUMN e1_code TEXT",
+        "ALTER TABLE game_state ADD COLUMN e2_code TEXT",
+        "ALTER TABLE game_state ADD COLUMN secret_text TEXT",
+        "ALTER TABLE game_state ADD COLUMN has_secret_relic INTEGER DEFAULT 0",
+        "ALTER TABLE game_state ADD COLUMN has_palo INTEGER DEFAULT 0",
+        "ALTER TABLE game_state ADD COLUMN has_vendas INTEGER DEFAULT 0"
     ]
     for q in alters:
         try:
@@ -117,14 +129,14 @@ def get_active_game_for_user(user_id, time_now):
     return dict(row) if row else None
 
 
-def create_game(variant, p_dic, p_pap1, p_pap2, p_weight, user_id=None, difficulty='easy', total_time=900.0):
+def create_game(e1_code, e2_code, secret_text, p_dic, p_pap1, p_pap2, p_weight, user_id=None, difficulty='easy', total_time=900.0):
     conn = get_db()
     c = conn.cursor()
     c.execute(
         '''INSERT INTO game_state 
-           (user_id, variant, start_time, pos_diccionario, pos_papiro1, pos_papiro2, pos_weights, difficulty, total_time) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-        (user_id, variant, t.time(), p_dic, p_pap1, p_pap2, p_weight, difficulty, total_time)
+           (user_id, variant, start_time, pos_diccionario, pos_papiro1, pos_papiro2, pos_weights, difficulty, total_time, e1_code, e2_code, secret_text) 
+           VALUES (?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+        (user_id, t.time(), p_dic, p_pap1, p_pap2, p_weight, difficulty, total_time, json.dumps(e1_code), json.dumps(e2_code), secret_text)
     )
     game_id = c.lastrowid
     conn.commit()

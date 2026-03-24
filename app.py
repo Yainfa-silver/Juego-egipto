@@ -12,7 +12,7 @@ from game.db import (
 )
 from game.logic import (
     validate_enigma, get_time_remaining, is_time_up,
-    random_variant, random_positions, HIEROGLYPHS, HIEROGLYPH_NAMES, VARIANTS,
+    generate_random_codes, random_positions, HIEROGLYPHS, HIEROGLYPH_NAMES,
     get_hints, get_papiro_indices,
 )
 
@@ -24,8 +24,8 @@ app.secret_key = 'egypt_pyramid_secret_2024_xK9mZ'
 # ═══════════════════════════════════════════
 
 def _build_state(game):
-    variant = game['variant']
-    v = VARIANTS[variant]
+    e1_code = json.loads(game['e1_code'])
+    e2_code = json.loads(game['e2_code'])
     time_remaining = get_time_remaining(game)
 
     # Mark game over if timer expired
@@ -34,9 +34,9 @@ def _build_state(game):
         game['game_over'] = 1
 
     hint1, hint2 = get_hints(
-        variant, game['has_papiro1'], game['has_papiro2'], game['has_dictionary']
+        e1_code, e2_code, game['has_papiro1'], game['has_papiro2'], game['has_dictionary']
     )
-    idx1, idx2 = get_papiro_indices(variant, game['has_papiro1'], game['has_papiro2'])
+    idx1, idx2 = get_papiro_indices(e1_code, e2_code, game['has_papiro1'], game['has_papiro2'])
 
     pos_dic = json.loads(game['pos_diccionario']) if game['pos_diccionario'] else None
     pos_pap1 = json.loads(game['pos_papiro1']) if game['pos_papiro1'] else None
@@ -76,6 +76,9 @@ def _build_state(game):
         'notes_read':            json.loads(game.get('notes_read', '[]')),
         'weights_collected':     json.loads(game.get('weights_collected', '[]')),
         'error_count':           game.get('error_count', 0),
+        'has_secret_relic':      bool(game.get('has_secret_relic', 0)),
+        'has_palo':              bool(game.get('has_palo', 0)),
+        'has_vendas':            bool(game.get('has_vendas', 0)),
         
         'hieroglyphs':           HIEROGLYPHS,
         'hieroglyph_names':      HIEROGLYPH_NAMES,
@@ -83,7 +86,7 @@ def _build_state(game):
         'enigma2_hint':          hint2,
         'papiro1_code_indices':  idx1,
         'papiro2_code_indices':  idx2,
-        'secret_text':           v['secret_text'] if game['game_won'] else None,
+        'secret_text':           game['secret_text'] if game['game_won'] else None,
     }
 
 
@@ -155,9 +158,9 @@ def start_game():
     difficulty = request.json.get('difficulty', 'easy') if request.is_json and request.json else 'easy'
     total_time = 420.0 if difficulty == 'hard' else 900.0
 
-    variant = random_variant()
+    e1, e2, secret = generate_random_codes()
     p_dic, p_pap1, p_pap2, p_weight = random_positions()
-    game_id = create_game(variant, p_dic, p_pap1, p_pap2, p_weight, user_id=user_id, difficulty=difficulty, total_time=total_time)
+    game_id = create_game(e1, e2, secret, p_dic, p_pap1, p_pap2, p_weight, user_id=user_id, difficulty=difficulty, total_time=total_time)
     
     session['game_id'] = game_id
     game = get_game(game_id)
@@ -186,7 +189,7 @@ def move():
         
     data = request.get_json()
     room = data.get('room')
-    if room not in [1, 2, 3, 4, 5]:
+    if room not in [1, 2, 3, 4, 5, 6, 7]:
         return jsonify({'error': 'Sala inválida'}), 400
     if abs(game['current_room'] - room) != 1:
         return jsonify({'error': 'No puedes saltar a esa sala'}), 400
@@ -212,9 +215,11 @@ def trigger_hint():
     if not game['has_dictionary']:
         msg = "Pista divina: Debes encontrar el Diccionario de Jeroglíficos antes de intentar descifrar nada."
     elif not game['enigma1_solved']:
-        msg = f"La pared susurra: {VARIANTS[game['variant']]['enigma1_hint'][0]}..."
+        e1 = json.loads(game['e1_code'])
+        msg = f"La pared susurra: {HIEROGLYPH_NAMES[e1[0]]}..."
     elif not game['enigma2_solved']:
-        msg = f"La pared susurra la primera pieza: {HIEROGLYPH_NAMES[VARIANTS[game['variant']]['enigma2_code'][0]]}..."
+        e2 = json.loads(game['e2_code'])
+        msg = f"La pared susurra la primera pieza: {HIEROGLYPH_NAMES[e2[0]]}..."
     elif not game['anubis_solved']:
         msg = "Pista divina: La Balanza de Anubis en la Sala 4 anhela equilibrio perfecto entre el corazón, pluma y el oro."
 
@@ -247,9 +252,15 @@ def pickup():
     elif item == 'papiro2' and game['current_room'] == p2_room and not game['has_papiro2']:
         updates['has_papiro2'] = 1
         message = '📄 ¡Has recogido el Papiro de Osiris!'
+    elif item == 'palo' and game['current_room'] == 1 and not game.get('has_palo'):
+        updates['has_palo'] = 1
+        message = '🪵 Has recogido un Palo Seco de madera antigua.'
+    elif item == 'vendas' and game['current_room'] == 2 and not game.get('has_vendas'):
+        updates['has_vendas'] = 1
+        message = '🩹 Has recogido Vendas impregnadas en aceite reseco.'
+    # Torch direct pickup removed, now uses crafting, but we keep the logical fallback just in case
     elif item == 'torch' and game['current_room'] == 1 and not game.get('has_torch'):
-        updates['has_torch'] = 1
-        message = '🔥 Has recogido una antorcha. Podrás iluminar las salas más profundas.'
+        return jsonify({'error': 'No puedes recoger la antorcha así, debes fabricarla.'}), 400
     else:
         return jsonify({'error': 'No puedes recoger ese objeto ahora'}), 400
 
@@ -257,6 +268,49 @@ def pickup():
     game = get_game(game_id)
     return jsonify({'success': True, 'message': message, 'state': _build_state(game)})
 
+
+@app.route('/api/craft', methods=['POST'])
+def craft():
+    game_id = session.get('game_id')
+    game = get_game(game_id)
+    if not game: return jsonify({'error': 'Sin partida'}), 400
+    
+    data = request.get_json()
+    item1 = data.get('item1')
+    item2 = data.get('item2')
+    
+    items = {item1, item2}
+    if items == {'palo', 'vendas'}:
+        if not game.get('has_palo') or not game.get('has_vendas'):
+            return jsonify({'error': 'No tienes los componentes.'}), 400
+        # Consume palo & vendas, give torch
+        update_game(game_id, has_palo=0, has_vendas=0, has_torch=1)
+        game = get_game(game_id)
+        return jsonify({'success': True, 'message': '🔥 Has combinado el Palo Seco y las Vendas para crear una Antorcha.', 'state': _build_state(game)})
+    
+    return jsonify({'error': 'No puedes combinar eso.'}), 400
+
+@app.route('/api/unlock_secret', methods=['POST'])
+def unlock_secret():
+    game_id = session.get('game_id')
+    game = get_game(game_id)
+    if not game: return jsonify({'error': 'Sin partida'}), 400
+    
+    data = request.get_json()
+    code = data.get('code')
+    
+    # Let's say the secret code is 3-1-4 (Pi)
+    if code == '3-1-4':
+        if not game.get('has_secret_relic'):
+            update_game(game_id, has_secret_relic=1)
+            game = get_game(game_id)
+            return jsonify({'success': True, 'message': '🔓 ¡Click! Has desvelado el cofre oculto y obtenido la Reliquia de Kha-Ra.', 'state': _build_state(game)})
+        else:
+            return jsonify({'error': 'Ya tienes la reliquia.'}), 400
+    else:
+        # Increase error count for wrong cylinder attempts
+        update_game(game_id, error_count=game.get('error_count',0)+1)
+        return jsonify({'error': 'La cerradura no cede. Combinación incorrecta.'}), 400
 
 @app.route('/api/read_note', methods=['POST'])
 def read_note():
@@ -345,7 +399,9 @@ def solve():
             return jsonify({'error': 'Necesitas el papiro y el diccionario.'}), 400
         if game['enigma1_solved']:
             return jsonify({'success': False, 'message': '⚠️ Enigma 1 ya está resuelto.'}), 200
-        if validate_enigma(game['variant'], 1, code):
+        
+        e1 = json.loads(game['e1_code'])
+        if validate_enigma(e1, code):
             pieces  = json.loads(game['puzzle_pieces'])
             buttons = json.loads(game['buttons_activated'])
             if 1 not in pieces:  pieces.append(1)
@@ -366,7 +422,9 @@ def solve():
             return jsonify({'error': 'Necesitas el papiro de la Sala 3 y el diccionario.'}), 400
         if game['enigma2_solved']:
             return jsonify({'success': False, 'message': '⚠️ Enigma 2 ya está resuelto.'}), 200
-        if validate_enigma(game['variant'], 2, code):
+        
+        e2 = json.loads(game['e2_code'])
+        if validate_enigma(e2, code):
             pieces  = json.loads(game['puzzle_pieces'])
             buttons = json.loads(game['buttons_activated'])
             if 2 not in pieces:  pieces.append(2)
@@ -446,8 +504,25 @@ def complete_puzzle():
         conn.commit()
     conn.close()
 
-    secret = VARIANTS[game['variant']]['secret_text']
-    msg = f'¡Has escapado! El secreto era: «{secret}»'
+    secret = game['secret_text']
+    base_msg = f'¡Has escapado! El secreto era: «{secret}»'
+    
+    # Endings logic
+    if game.get('has_secret_relic'):
+        ending_title = "FINAL VERDADERO: Rey del Inframundo"
+        base_msg = f'Al salir con la Reliquia de Kha-Ra bajo el brazo, sientes cómo la pirámide se rinde a tus pies. Has descubierto el secreto: «{secret}»'
+        if "final_verdadero" not in new_achievements and "final_verdadero" not in my_achievements:
+            my_achievements.append("final_verdadero")
+            new_achievements.append("final_verdadero")
+            c.execute('UPDATE users SET achievements = ? WHERE id = ?', (json.dumps(my_achievements), game['user_id']))
+            conn.commit()
+    elif game.get('error_count', 0) > 4:
+        ending_title = "FINAL COBARDE: Huida Errática"
+        base_msg = f'Saliste corriendo tropezando con cada piedra. Apenas escapaste con el secreto: «{secret}»'
+    else:
+        ending_title = "FINAL NORMAL: Arqueólogo Sobreviviente"
+        
+    msg = f'{ending_title} | {base_msg}'
     if new_achievements:
         msg += f' ¡Logros ganados: {", ".join(new_achievements)}!'
 

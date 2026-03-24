@@ -13,6 +13,11 @@ let currentEnigma = 0;
 let placedPieces = {};           
 
 let currentAnubisPlacements = [null, null, null];
+let lockCylinders = [0, 0, 0];
+let selectedCraftItem = null;
+let guardianInterval = null;
+let guardianActive = false;
+let guardianTimeout = null;
 
 // ─── Web Audio API SFX ──────────────────────────────────────────
 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -141,6 +146,7 @@ async function resumeGame() {
   startTimer();
   renderAll();
   playMusic();
+  startGuardianSystem();
   toast('⚓ De vuelta a la pirámide...', 'success');
 }
 
@@ -162,6 +168,7 @@ async function startGame() {
   startTimer();
   renderAll();
   playMusic();
+  startGuardianSystem();
   toast('⚓ La pirámide se cierra detrás de ti... ¡Escapa!');
 }
 
@@ -174,6 +181,7 @@ function checkEndConditions() {
 function showVictory() {
   playSFX('success');
   clearInterval(timerInterval);
+  stopGuardianSystem();
   closeAllModals();
   document.getElementById('screen-game').hidden    = true;
   document.getElementById('screen-gameover').hidden = true;
@@ -185,6 +193,7 @@ function showVictory() {
 function showGameOver() {
   playSFX('stone');
   clearInterval(timerInterval);
+  stopGuardianSystem();
   closeAllModals();
   document.getElementById('screen-game').hidden    = true;
   document.getElementById('screen-victory').hidden  = true;
@@ -194,6 +203,7 @@ function showGameOver() {
 function restartGame() {
   playSFX('click');
   clearInterval(timerInterval);
+  stopGuardianSystem();
   gameState = null; selectedHiero = []; placedPieces = {};
   document.getElementById('screen-victory').hidden  = true;
   document.getElementById('screen-gameover').hidden = true;
@@ -236,6 +246,11 @@ async function moveToRoom(room) {
   const data = await api('POST', '/api/move', { room });
   if (data.error) { toast(data.error, 'error'); return; }
   gameState = data.state;
+  if (guardianActive && room === 1) {
+    guardianActive = false;
+    clearTimeout(guardianTimeout);
+    toast('Estás a salvo... el Guardián ha pasado de largo.', 'success');
+  }
   renderAll();
 }
 
@@ -325,6 +340,9 @@ async function submitHiero() {
     playSFX('stone');
     gameState = data.state; // update errors
     toast(data.message, 'error');
+    if (gameState.error_count > 0 && gameState.error_count % 3 === 0) {
+      triggerSandTrap();
+    }
   }
 }
 
@@ -563,14 +581,14 @@ function renderAll() {
 }
 
 function updateMap() {
-  [1,2,3,4,5].forEach(r => {
+  [1,2,3,4,5,6,7].forEach(r => {
     const node = document.getElementById(`map-node-${r}`);
     if (node) node.classList.toggle('active-room', gameState.current_room === r);
   });
 }
 
 function renderHeaderRoom() {
-  const names = ['', 'Sala 1 — Cámara de Entrada', 'Sala 2 — Archivo de Papiros', 'Sala 3 — Santuario Interior', 'Sala 4 — Cámara de Ofrendas', 'Sala 5 — Tumba del Faraón'];
+  const names = ['', 'Sala 1 — Cámara de Entrada', 'Sala 2 — Pasillo de los Sirvientes', 'Sala 3 — Archivo de Papiros', 'Sala 4 — Santuario Oscuro', 'Sala 5 — Cámara de Ofrendas', 'Sala 6 — Armería Real', 'Sala 7 — Tumba del Faraón'];
   document.getElementById('header-room-label').textContent = names[gameState.current_room] || '';
 }
 
@@ -578,7 +596,7 @@ function renderHeaderRoom() {
 function renderRoom() {
   const overlay = document.getElementById('darkness-overlay');
   
-  if ((gameState.current_room === 4 || gameState.current_room === 5) && !gameState.has_torch) {
+  if ((gameState.current_room >= 4) && !gameState.has_torch) {
     overlay.hidden = false;
   } else {
     overlay.hidden = true;
@@ -595,6 +613,8 @@ function renderRoom() {
   if (gameState.current_room === 3) renderRoom3Objects(objContainer);
   if (gameState.current_room === 4) renderRoom4Objects(objContainer);
   if (gameState.current_room === 5) renderRoom5Objects(objContainer);
+  if (gameState.current_room === 6) renderRoom6Objects(objContainer);
+  if (gameState.current_room === 7) renderRoom7Objects(objContainer);
 
   const notesRead = gameState.notes_read || [];
   if (!notesRead.includes(gameState.current_room)) {
@@ -637,9 +657,9 @@ function makeObject(icon, label, x, y, onClick, extraClass = '') {
 }
 
 function renderRoom1Objects(container) {
-  if (!gameState.has_torch) {
-    const torch = makeObject('🔥', 'Antorcha', '12%', '25%', () => pickupItem('torch'), 'hidden-btn');
-    container.appendChild(torch);
+  if (!gameState.has_palo) {
+    const palo = makeObject('🪵', 'Palo Seco', '12%', '25%', () => pickupItem('palo'));
+    container.appendChild(palo);
   }
 
   const nav = document.createElement('div');
@@ -673,6 +693,11 @@ function renderRoom2Objects(container) {
   if (gameState.has_papiro1 && gameState.has_dictionary && !gameState.enigma1_solved) {
     const solveBtn = makeObject('🔑', 'Resolver Enigma 1', '45%', '10%', () => { openHieroPanel(1); });
     container.appendChild(solveBtn);
+  }
+
+  if (!gameState.has_vendas) {
+    const vendas = makeObject('🩹', 'Vendas Antiguas', '20%', '15%', () => pickupItem('vendas'));
+    container.appendChild(vendas);
   }
 }
 
@@ -715,6 +740,35 @@ function renderRoom5Objects(container) {
   navLeft.className = 'scene-nav left'; navLeft.innerHTML = '‹'; navLeft.title = 'Ir a Sala 4';
   navLeft.addEventListener('click', () => moveToRoom(4));
   container.appendChild(navLeft);
+
+  const navRight = document.createElement('div');
+  navRight.className = 'scene-nav right'; navRight.innerHTML = '›'; navRight.title = 'Ir a Sala 6';
+  navRight.addEventListener('click', () => moveToRoom(6));
+  container.appendChild(navRight);
+}
+
+function renderRoom6Objects(container) {
+  const navLeft = document.createElement('div');
+  navLeft.className = 'scene-nav left'; navLeft.innerHTML = '‹'; navLeft.title = 'Ir a Sala 5';
+  navLeft.addEventListener('click', () => moveToRoom(5));
+  container.appendChild(navLeft);
+
+  const navRight = document.createElement('div');
+  navRight.className = 'scene-nav right'; navRight.innerHTML = '›'; navRight.title = 'Ir a Sala 7';
+  navRight.addEventListener('click', () => moveToRoom(7));
+  container.appendChild(navRight);
+
+  if (!gameState.has_secret_relic) {
+    const chestBtn = makeObject('🔒', 'Cofre Sellado', '50%', '30%', () => openLockMinigame());
+    container.appendChild(chestBtn);
+  }
+}
+
+function renderRoom7Objects(container) {
+  const navLeft = document.createElement('div');
+  navLeft.className = 'scene-nav left'; navLeft.innerHTML = '‹'; navLeft.title = 'Ir a Sala 6';
+  navLeft.addEventListener('click', () => moveToRoom(6));
+  container.appendChild(navLeft);
 }
 
 function addRoomMessage(container, text, color, bottom = '0.5rem') {
@@ -752,6 +806,9 @@ function renderInventory() {
   if (gameState.has_papiro1) items.push({ icon: '📜', label: 'Papiro Ra', action: () => openPapiro(1) });
   if (gameState.has_papiro2) items.push({ icon: '📜', label: 'Papiro Osiris', action: () => openPapiro(2) });
   if (gameState.has_torch) items.push({ icon: '🔥', label: 'Antorcha', action: null });
+  if (gameState.has_palo) items.push({ id: 'palo', icon: '🪵', label: 'Palo Seco', action: () => clickCraftItem('palo') });
+  if (gameState.has_vendas) items.push({ id: 'vendas', icon: '🩹', label: 'Vendas', action: () => clickCraftItem('vendas') });
+  if (gameState.has_secret_relic) items.push({ icon: '🏺', label: 'Reliquia', action: () => inspectItem('🏺', 'Reliquia de Kha-Ra\n\nDesprende un aura oscura y milenaria. Has demostrado gran valía al encontrar el Secreto de la Vida.') });
   
   const collWeights = gameState.weights_collected || [];
   collWeights.forEach(w => items.push({ icon: getWeightIcon(w), label: getWeightName(w), action: null }));
@@ -768,6 +825,8 @@ function renderInventory() {
     const div = document.createElement('div');
     div.className = 'inv-item';
     if (item.action) div.style.cursor = 'pointer';
+    if (item.id && item.id === selectedCraftItem) div.style.boxShadow = '0 0 10px 2px var(--gold)'; // inline highlight
+    
     if (item.raw) {
       div.innerHTML = `<span class="inv-icon">${item.icon}</span><span class="inv-label">${item.label}</span>`;
     } else {
@@ -779,7 +838,7 @@ function renderInventory() {
 }
 
 function renderNavButtons() {
-  [1,2,3,4,5].forEach(i => {
+  [1,2,3,4,5,6,7].forEach(i => {
     const btn = document.getElementById(`nav-btn-${i}`);
     if (!btn) return;
     btn.classList.toggle('current', gameState.current_room === i);
@@ -809,6 +868,118 @@ function closeAllModals() {
   const overlay = document.getElementById('modal-overlay');
   overlay.hidden = true;
   Array.from(overlay.children).forEach(el => { el.hidden = true; });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  GUARDIAN & HAZARDS
+// ═══════════════════════════════════════════════════════════════
+function startGuardianSystem() {
+  clearInterval(guardianInterval);
+  guardianActive = false;
+  guardianInterval = setInterval(() => {
+    if (gameState && !gameState.game_won && !gameState.game_over) {
+      triggerGuardian();
+    }
+  }, 45000 + Math.random() * 30000);
+}
+
+function stopGuardianSystem() {
+  clearInterval(guardianInterval);
+  clearTimeout(guardianTimeout);
+  guardianActive = false;
+}
+
+function triggerGuardian() {
+  if (gameState.current_room === 1) return;
+  playSFX('stone');
+  document.body.classList.add('shake-screen');
+  setTimeout(() => document.body.classList.remove('shake-screen'), 1000);
+  toast('¡Un Guardián se acerca! ¡Escóndete en la Cámara de Entrada (Sala 1) rápido!', 'error');
+  guardianActive = true;
+  guardianTimeout = setTimeout(() => {
+    if (guardianActive && gameState && gameState.current_room !== 1) {
+       toast('El Guardián te ha encontrado...', 'error');
+       localTimeRemaining = 0;
+       showGameOver();
+    }
+    guardianActive = false;
+  }, 12000);
+}
+
+function triggerSandTrap() {
+  playSFX('stone');
+  document.body.classList.add('shake-screen');
+  setTimeout(() => document.body.classList.remove('shake-screen'), 800);
+  localTimeRemaining -= 120;
+  toast('¡Trampa activada! Has perdido 2 minutos.', 'error');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CRAFTING & INSPECT
+// ═══════════════════════════════════════════════════════════════
+async function clickCraftItem(id) {
+  if (!selectedCraftItem) {
+    selectedCraftItem = id;
+    renderInventory();
+    return;
+  }
+  if (selectedCraftItem !== id) {
+    const data = await api('POST', '/api/craft', { item1: selectedCraftItem, item2: id });
+    selectedCraftItem = null;
+    if (data.success) {
+      playSFX('success');
+      gameState = data.state;
+      toast(data.message, 'success');
+      renderAll();
+    } else {
+      toast(data.error, 'error');
+      renderInventory();
+    }
+  } else {
+    selectedCraftItem = null;
+    renderInventory();
+  }
+}
+
+function inspectItem(icon, desc) {
+  document.getElementById('inspect-icon').textContent = icon;
+  document.getElementById('inspect-desc').textContent = desc;
+  openModal('modal-inspect');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  LOCK MINIGAME
+// ═══════════════════════════════════════════════════════════════
+function openLockMinigame() {
+  lockCylinders = [0, 0, 0];
+  renderLockCylinders();
+  openModal('modal-minigame-lock');
+}
+function renderLockCylinders() {
+  document.getElementById('cyl-val-0').textContent = lockCylinders[0];
+  document.getElementById('cyl-val-1').textContent = lockCylinders[1];
+  document.getElementById('cyl-val-2').textContent = lockCylinders[2];
+}
+function spinCylinder(col, dir) {
+  playSFX('click');
+  lockCylinders[col] = (lockCylinders[col] + dir + 10) % 10;
+  renderLockCylinders();
+}
+async function submitLock() {
+  const code = lockCylinders.join('-');
+  const data = await api('POST', '/api/unlock_secret', { code });
+  if (data.success) {
+    playSFX('success');
+    gameState = data.state;
+    toast(data.message, 'success');
+    closeModal('modal-minigame-lock');
+    renderAll();
+  } else {
+    playSFX('stone');
+    gameState = data.state;
+    toast(data.error, 'error');
+    if (gameState.error_count > 0 && gameState.error_count % 3 === 0) triggerSandTrap();
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -891,7 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-restart-victory').addEventListener('click', restartGame);
   document.getElementById('btn-restart-gameover').addEventListener('click', restartGame);
 
-  [1,2,3,4,5].forEach(i => {
+  [1,2,3,4,5,6,7].forEach(i => {
     const btn = document.getElementById(`nav-btn-${i}`);
     if (btn) btn.addEventListener('click', () => moveToRoom(i));
   });
