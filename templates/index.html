@@ -27,12 +27,15 @@
 </head>
 <body>
 
+<!-- Particle effect for the entire menu -->
+<div class="particle-container" id="menu-particles"></div>
+
 <!-- ══════════════════════════════════════════════════════════
      SCREEN: LOGIN
 ══════════════════════════════════════════════════════════ -->
 <div id="screen-login">
   <div class="start-content">
-    <div class="hieroglyph-deco">𓀀 𓂋 𓃀 𓄿 𓅱</div>
+    <div class="scarab-logo"></div>
     <h1 class="game-title">La Pirámide de Kha-Ra</h1>
     <p class="game-subtitle">Identifícate, Viajero</p>
     <div style="margin: 2rem 0; text-align: center;">
@@ -72,6 +75,7 @@
 ══════════════════════════════════════════════════════════ -->
 <div id="screen-start" hidden>
   <div class="start-content">
+    <div class="scarab-logo"></div>
     <h1 class="game-title">La Pirámide de Kha-Ra</h1>
     <h2 id="welcome-message" style="color:var(--gold); font-family:'Cinzel',serif; font-size:1.5rem; margin-bottom: 0.5rem;"></h2>
     <div id="achievements-display" style="margin-bottom: 1rem; text-align: center;"></div>
@@ -530,6 +534,30 @@
     });
   });
   observer.observe(document.getElementById('scene-objects'), { childList: true, subtree: true });
+  // Particle Generation for Main Menu
+  function createParticles() {
+    const container = document.getElementById('menu-particles');
+    if (!container) return;
+    const count = 30;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      
+      const size = Math.random() * 4 + 2;
+      const left = Math.random() * 100;
+      const delay = Math.random() * 10;
+      const duration = Math.random() * 10 + 15;
+      
+      p.style.width = `${size}px`;
+      p.style.height = `${size}px`;
+      p.style.left = `${left}%`;
+      p.style.animationDelay = `${delay}s`;
+      p.style.animationDuration = `${duration}s`;
+      
+      container.appendChild(p);
+    }
+  }
+  createParticles();
 </script>
 
 </body>

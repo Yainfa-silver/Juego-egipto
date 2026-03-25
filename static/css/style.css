@@ -42,19 +42,33 @@ body {
 /* ═══════════════════════════════════════════════════════════════
    START SCREEN
 ═══════════════════════════════════════════════════════════════ */
-#screen-start {
+#screen-login, #screen-start {
   position: fixed; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  background: url('/static/img/start_bg.png') center/cover no-repeat;
+  background: #0a0705 url('/static/img/main_bg.png') center/cover no-repeat;
   z-index: 10;
+  overflow: hidden;
 }
-#screen-start::before {
+#screen-login::before, #screen-start::before {
   content: '';
   position: absolute; inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(8,6,10,0.82) 100%);
+  background: radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(8,6,10,0.85) 100%);
+  z-index: 1;
 }
-.start-content { position: relative; text-align: center; padding: 2rem; }
+.start-content { 
+  position: relative; 
+  text-align: center; 
+  padding: 3rem; 
+  z-index: 5;
+  background: rgba(26, 18, 8, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(201, 162, 39, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 30px rgba(201, 162, 39, 0.1);
+  max-width: 900px;
+  width: 90%;
+}
 
 .game-title {
   font-family: 'Cinzel Decorative', serif;
@@ -77,17 +91,21 @@ body {
   0%,100% { text-shadow: 0 0 30px rgba(240,192,64,0.8), 0 0 60px rgba(240,192,64,0.4); }
   50%     { text-shadow: 0 0 50px rgba(240,192,64,1),   0 0 90px rgba(240,192,64,0.6); }
 }
-.hieroglyph-deco {
-  font-size: 2.8rem;
-  color: var(--gold);
-  opacity: 0.7;
-  letter-spacing: 0.5rem;
-  margin-bottom: 2rem;
-  animation: floatHiero 4s ease-in-out infinite;
+.scarab-logo {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1.5rem;
+  background: url('/static/img/scarab_seal.png') center/contain no-repeat;
+  filter: drop-shadow(0 0 15px rgba(240, 192, 64, 0.5));
+  animation: scarabFloat 6s ease-in-out infinite, scarabGlow 4s ease-in-out infinite;
 }
-@keyframes floatHiero {
-  0%,100% { transform: translateY(0); opacity: 0.7; }
-  50%     { transform: translateY(-8px); opacity: 1; }
+@keyframes scarabFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(5deg); }
+}
+@keyframes scarabGlow {
+  0%, 100% { filter: drop-shadow(0 0 15px rgba(240, 192, 64, 0.5)); }
+  50% { filter: drop-shadow(0 0 30px rgba(240, 192, 64, 0.8)); }
 }
 .start-instructions {
   color: var(--cream);
@@ -153,23 +171,48 @@ body {
 }
 
 .login-input {
-  background: rgba(10, 10, 10, 0.8);
-  border: 2px solid var(--gold);
+  background: rgba(10, 10, 10, 0.6);
+  border: 1px solid rgba(201, 162, 39, 0.4);
   color: #fff;
   font-family: 'Cinzel', serif;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   padding: 0.8rem 1.5rem;
-  border-radius: 4px;
+  border-radius: 8px;
   width: 100%;
-  max-width: 300px;
+  max-width: 350px;
   text-align: center;
   outline: none;
-  transition: box-shadow 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
 }
 .login-input:focus {
-  box-shadow: 0 0 15px rgba(201,162,39,0.8);
+  border-color: var(--gold-light);
+  box-shadow: 0 0 20px rgba(240, 192, 64, 0.3), inset 0 2px 10px rgba(0,0,0,0.5);
+  background: rgba(20, 15, 10, 0.8);
 }
-.login-input::placeholder { color: rgba(255,255,255,0.4); }
+.login-input::placeholder { color: rgba(255,255,255,0.3); letter-spacing: 0.05em; }
+
+/* ─── Particles ────────────────────────────────────────────── */
+.particle-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.particle {
+  position: absolute;
+  background: var(--gold-light);
+  border-radius: 50%;
+  opacity: 0.3;
+  filter: blur(1px);
+  animation: floatParticle linear infinite;
+}
+@keyframes floatParticle {
+  from { transform: translateY(110vh) translateX(0); opacity: 0; }
+  20% { opacity: 0.4; }
+  80% { opacity: 0.4; }
+  to { transform: translateY(-10vh) translateX(100px); opacity: 0; }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    GAME SCREEN
