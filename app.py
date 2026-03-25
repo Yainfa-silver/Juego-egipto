@@ -106,6 +106,9 @@ def login():
     if not username or not username.strip():
         return jsonify({'error': 'Nombre de usuario en blanco'}), 400
     
+    if len(username.strip()) > 9:
+        return jsonify({'error': 'El nombre de usuario no puede superar los 9 caracteres'}), 400
+    
     user_id = get_or_create_user(username.strip())
     session['user_id'] = user_id
     
@@ -193,6 +196,9 @@ def move():
         return jsonify({'error': 'Sala inválida'}), 400
     if abs(game['current_room'] - room) != 1:
         return jsonify({'error': 'No puedes saltar a esa sala'}), 400
+    # Condition: Rooms 4, 5, 6, 7 are dark; need torch to enter from below or if target is dark
+    if room >= 4 and not game.get('has_torch'):
+        return jsonify({'error': '⚠️ Está demasiado oscuro para avanzar. Necesitas una antorcha.'}), 400
     update_game(game_id, current_room=room)
     game = get_game(game_id)
     return jsonify({'success': True, 'state': _build_state(game)})

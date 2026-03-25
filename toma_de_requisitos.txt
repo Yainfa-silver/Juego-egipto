@@ -1,96 +1,78 @@
 ====================================================================
-           TOMA DE REQUISITOS - LA PIRÁMIDE DE KHA-RA
+      ESPECIFICACIÓN DE REQUISITOS DE SOFTWARE (SRS) v2.0
+                  PROYECTO: LA PIRÁMIDE DE KHA-RA
 ====================================================================
 
-1. DESCRIPCIÓN GENERAL DEL SISTEMA
-----------------------------------
-El sistema consiste en un de videojuego web 2D del género "Escape Room" 
-o "Point & Click", ambientado en una tumba del antiguo Egipto. 
-El jugador asume el rol de un arqueólogo/viajero que ha quedado atrapado 
-y dispone de un tiempo límite (15 minutos) para resolver una serie de 
-enigmas criptográficos basados en jeroglíficos para abrir la puerta principal 
-y escapar con vida.
+1. RESUMEN EJECUTIVO
+--------------------
+El presente documento define el alcance técnico y funcional del sistema "La Pirámide de Kha-Ra", un entorno de videojuego web 2D de alta fidelidad basado en el género "Point & Click / Escape Room". La arquitectura está diseñada para una experiencia SPA (Single Page Application) persistente y segura.
 
-2. REQUISITOS FUNCIONALES (RF)
-------------------------------
-RF01 - Gestión de Usuarios: El sistema debe requerir un nombre de usuario ("viajero") 
-       al acceder. Debe almacenar este nombre y asociarlo con sus partidas.
-RF02 - Guardado y Reanudación de Partida: El sistema debe guardar el progreso 
-       de forma persistente en servidor. Si el usuario cierra el navegador o 
-       se desconecta, al iniciar sesión con el mismo nombre debe permitir 
-       "Continuar Partida" exactamente desde el estado, inventario y tiempo restante anterior.
-RF03 - Entorno de 7 Salas: El jugador debe poder navegar horizontalmente entre 7 estancias 
-       diferentes (Entrada, Pasillo de Sirvientes, Archivo, Santuario Oscuro, Cámara de 
-       Ofrendas, Armería Real, Tumba Verdadera).
-RF04 - Cronómetro: Debe existir una cuenta atrás de 15 minutos en tiempo real. 
-       Al finalizar sin completar el puzzle, la partida debe concluir en "Game Over".
-RF05 - Generación Aleatoria (Rejugabilidad): Los objetos fundamentales para resolver 
-       los puzles (Diccionario, Papiro de Ra, Papiro de Osiris, Pesos de Anubis) deben distribuirse 
-       en posiciones que varían aleatoriamente a lo largo de las salas 2 a 7 al 
-       crear una nueva partida.
-RF06 - Sistema de Inventario: Debe existir un repositorio visual (HUD) donde los 
-       objetos recolectados por el jugador queden guardados y puedan ser inspeccionados 
-       haciendo clic en ellos (ej. abrir el visor del diccionario).
-RF07 - Resolución de Enigmas de Jeroglíficos: El sistema debe pedir combinaciones 
-       específicas de 3 jeroglíficos. Dichas combinaciones deben ser generadas de 
-       forma 100% procedimental y aleatoria en el backend al iniciar un juego nuevo.
-RF08 - Resolución del Meta-Puzzle Final: Completar los 3 micro-enigmas otorgará 
-       3 piezas de un altar antiguo. El jugador debe poder colocar las 3 piezas 
-       en sus correspondientes ranuras y confirmar la acción para ganar la partida.
-RF09 - Clasificación Global (Salón de la Fama): Mostrar los 10 mejores tiempos de escape 
-       en la pantalla de inicio, calculando el tiempo exacto desde el inicio de 
-       la partida hasta la resolución del meta-puzzle final.
-RF10 - Sistema de Audio y Ajustes: El juego debe contar con música temática de fondo 
-       que se reproduce automáticamente, junto con un menú de opciones integrado 
-       en la cabecera para pausar la reproducción y regular el volumen mediante una barra.
-RF11 - Sistema de Crafteo: El inventario debe permitir la combinación lógica de objetos 
-       básicos (ej. Palo Seco + Vendas Antiguas) para fabricar herramientas (ej. Antorcha).
-RF12 - Múltiples Finales: La conclusión de la partida debe variar (Final Normal, 
-       Final Verdadero o Final Cobarde) según las decisiones del jugador, sus errores, 
-       y si consiguió desbloquear la Reliquia Secreta.
-RF13 - Peligros Dinámicos (Trampas y Guardián): El juego debe castigar los errores del 
-       jugador restándole tiempo (Trampa de Arena). Además, debe existir un Guardián 
-       errante que aparezca al azar (tras 3 minutos de gracia iniciales) mediante sonidos 
-       de pasos, forzando al jugador a esconderse en la sala de inicio previa muerte inminente.
-RF14 - Minijuegos Visuales: Debe existir un puzzle interactivo de interfaz gráfica 
-       (Cerradura de cilindros) para obtener objetos de gran valor.
+2. ALCANCE FUNCIONAL (BASELINE)
+-------------------------------
+El sistema se compone estrictamente de las siguientes funcionalidades, las cuales constituyen el 100% del alcance acordado:
 
+RF01 - Arquitectura de Escenario (7 Salas):
+       Infraestructura de navegación horizontal adyacente (±1) entre exactamente 7 estancias:
+       1. Cámara de Entrada (Zona Segura y Altar Final)
+       2. Pasillo de los Sirvientes
+       3. Archivo de Papiros
+       4. Santuario Oscuro (Puzle de la Balanza)
+       5. Cámara de Ofrendas
+       6. Armería Real (Cofre con Reliquia Secreta)
+       7. Tumba del Faraón (Meta Final)
 
-3. REQUISITOS NO FUNCIONALES (RNF)
-----------------------------------
-RNF01 - Arquitectura Técnica: Aplicación web estructurada bajo patrón Cliente-Servidor. 
-        - Backend: Python v3 con micro-framework Flask (APIs RESTFUL). 
-        - Frontend: HTML5, Vanilla JavaScript, CSS3.
-        - Motor de Base de Datos: SQLite relacional (`usuarios` y `estado_partida`).
-RNF02 - Seguridad (Anti-Cheat): El front-end solo actúa como capa de proyección (View). 
-        El servidor es la fuente única de la verdad (SSoT). La verificación 
-        de jeroglíficos, control de llaves obtenidas, generación de coordenadas 
-        de objetos, dictamen de tiempo y validación de adyacencia espacial (movimiento 
-        solo entre salas continuas) debe ocurrir de forma estricta en el servidor y 
-        estar filtrada y oculta al cliente (Frontend) para evitar manipulación, 
-        teletransporte arbitrario o inspección de estado mediante red.
-RNF03 - Diseño Gráfico / UI: Interfaz oscura "Modo Oscuro" o "Dark Mode" con motivos egipcios. 
-        Predominancia de paleta negra/obsidiana y colores acento oro antiguo/arena. 
-        Botones con efectos Hover, transiciones suaves (CSS transitions) y uso 
-        de tipografía de corte clásico-monumental (ej. familia "Cinzel").
-RNF04 - Interactividad: Todo debe ocurrir a través de una Single Page Application (SPA), 
-        usando manipulación dinámica del DOM (`hidden` attribute) y llamadas `fetch` 
-        evitando así recargas completas de la página de inicio a fin de la partida.
-RNF05 - Usabilidad: Las áreas interactivas del escenario (objetos en las salas, flechas 
-        de navegación) deben contar con animaciones u opacidades que brinden feedback visual 
-        al jugador de que son elementos pulsables.
+RF02 - Sistema de Iluminación y Supervivencia:
+       Mecánica de "Oscuridad Absoluta" en salas 4 a 7. Impide el acceso y la visibilidad a menos que el usuario posea el objeto "Antorcha".
 
-4. REGLAS DE NEGOCIO / LÓGICA DE JUEGO
---------------------------------------
-RN01 - Un objeto necesario para resolver un enigma no puede spawnear de forma 
-       inaccesible al jugador si este requiere resolver previamente dicho enigma. 
-       (Como el jugador tiene acceso libre de la Sala 1 a la 5 desde el inicio, esto no genera dead-locks).
-RN02 - El progreso no se puede reiniciar intencionadamente en mitad de la partida. 
-       Debe acabar por tiempo o por victoria para limpiarse del estado activo del usuario.
+RF03 - Sistema de Manufactura (Crafting):
+       Lógica de combinación de items en inventario:
+       [Palo Seco] + [Vendas Antiguas] = [Antorcha].
 
-5. ENTREGABLES REQUERIDOS
--------------------------
-- Código fuente backend documentado y estructurado (`app.py`, módulos en `/game/`).
-- Código fuente frontend (archivos estáticos dentro de `/static/` y `/templates/`).
-- Base de datos local transaccional alojada en el servidor (archivo `.db`).
-- Activos estáticos visuales (imágenes de salas y UI) y sonoros (música de fondo).
+RF04 - Motor de Enigmas Procedimentales:
+       Generación dinámica en backend de 2 micro-enigmas criptográficos por partida:
+       - Enigma 1: Basado en Papiro de Ra y Diccionario.
+       - Enigma 2: Basado en Papiro de Osiris (Secuencia Directa).
+
+RF05 - Puzle de la Balanza de Anubis:
+       Recolección aleatoria de 3 pesos sagrados (Corazón, Pluma, Oro). Resolución mediante ordenamiento lógico de pesos en la balanza (Sala 4).
+
+RF06 - Minijuego de Cerradura Cilíndrica:
+       Cerradura de 3 discos numéricos para obtención de la Reliquia de Kha-Ra (Sala 6). Código basado en la constante matemática Pi (3-1-4).
+
+RF07 - Gestión de Entidades (El Guardián):
+       IA de patrulla aleatoria. Tras un tiempo de gracia de 3 minutos, el Guardián aparece en intervalos de 45-75s. El jugador dispone de 12s para retornar a la Sala 1; de lo contrario, se dictamina "Game Over" inmediato.
+
+RF08 - Control de Tiempo y Dificultad:
+       - Modo Normal: 15 minutos (900s).
+       - Modo Faraón: 7 minutos (420s).
+       Pistas Divinas: Deducción de 120s del cronómetro por cada uso.
+
+RF09 - Lógica de Errores (Trampa de Arena):
+       Penalización acumulativa. Cada 3 acciones erróneas (códigos fallidos), el sistema resta 120s adicionales.
+
+RF10 - Persistencia y Sesión:
+       Almacenamiento en SQLite de estado de juego, inventario, progreso de puzles y tiempo restante. Soporte para reanudación de partidas interrumpidas.
+
+RF11 - Resultados y Gamificación:
+       - 3 Finales: Verdadero (con Reliquia), Normal, Cobarde (>4 errores).
+       - Logros: Perfeccionista, Speedrunner, Lector, Final Verdadero.
+       - Clasificación: Salón de la Fama (Top 10 global).
+
+3. ALCANCE NO FUNCIONAL Y SEGURIDAD
+------------------------------------
+- SSoT (Single Source of Truth): Toda la validación lógica ocurre en el servidor Python/Flask. El cliente JS es solo una capa de visualización.
+- SPA (Single Page Application): Navegación fluida sin recargas mediante Fetch API.
+- Multimedia: Audio contextual dinámico (Música y SFX) con control de mezcla de volumen.
+
+4. EXCLUSIONES DE ALCANCE (OUT OF SCOPE)
+-----------------------------------------
+Para prevenir la "corrupción de alcance" (Scope Creep), queda estrictamente fuera de este proyecto:
+- Implementación de modo multijugador o chat.
+- Adaptación nativa para dispositivos móviles (solo web responsive básico).
+- Creación de salas adicionales más allá de las 7 establecidas.
+- Cualquier puzle adicional o cambio en la lógica de jeroglíficos aleatorios.
+- Soporte para navegadores legacy (Internet Explorer).
+
+5. ACEPTACIÓN DE REQUISITOS
+---------------------------
+La entrega de este documento marca el límite final de las funcionalidades a desarrollar. Cualquier petición adicional será considerada un Cambio de Alcance sujeto a nueva valoración y presupuesto.

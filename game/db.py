@@ -99,6 +99,9 @@ def get_or_create_user(username):
         conn.close()
         return user_id
     else:
+        if len(username) > 9:
+            conn.close()
+            raise ValueError("Username too long (max 9 characters)")
         c.execute('INSERT INTO users (username) VALUES (?)', (username,))
         user_id = c.lastrowid
         conn.commit()

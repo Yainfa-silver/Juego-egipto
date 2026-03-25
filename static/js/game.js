@@ -23,6 +23,7 @@ let guardianStartTimeout = null;
 // ─── Web Audio API SFX ──────────────────────────────────────────
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
+let sfxVolume = 0.5;
 
 function playSFX(type) {
   if (!audioCtx) audioCtx = new AudioContext();
@@ -37,14 +38,14 @@ function playSFX(type) {
     osc.type = 'sine';
     osc.frequency.setValueAtTime(600, audioCtx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.05);
-    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.3 * sfxVolume, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
     osc.start(); osc.stop(audioCtx.currentTime + 0.1);
   } else if (type === 'stone') {
     osc.type = 'square';
     osc.frequency.setValueAtTime(100, audioCtx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.3);
-    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.4 * sfxVolume, audioCtx.currentTime);
     gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
     osc.start(); osc.stop(audioCtx.currentTime + 0.4);
   } else if (type === 'success') {
@@ -52,7 +53,7 @@ function playSFX(type) {
     osc.frequency.setValueAtTime(440, audioCtx.currentTime);
     osc.frequency.setValueAtTime(554, audioCtx.currentTime + 0.1);
     osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.2);
-    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.3 * sfxVolume, audioCtx.currentTime);
     gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
     osc.start(); osc.stop(audioCtx.currentTime + 0.6);
   }
@@ -651,7 +652,8 @@ function makeObject(icon, label, x, y, onClick, extraClass = '') {
   const div = document.createElement('div');
   div.className = `scene-object${extraClass ? ' ' + extraClass : ''}`;
   div.style.left = x; div.style.bottom = y;
-  div.innerHTML = `<span class="obj-icon ${extraClass}">${icon}</span>
+  // Replace the original icon with the yellow-orb div
+  div.innerHTML = `<span class="yellow-orb ${extraClass}"></span>
                    <span class="scene-object-label">${label}</span>`;
   div.addEventListener('click', onClick);
   return div;
@@ -1036,9 +1038,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const bgMusic = document.getElementById('bg-music');
   const btnToggle = document.getElementById('btn-music-toggle');
   const volumeSlider = document.getElementById('music-volume');
-  if (bgMusic && btnToggle && volumeSlider) {
+  const sfxSlider = document.getElementById('sfx-volume');
+  if (bgMusic && btnToggle && volumeSlider && sfxSlider) {
     volumeSlider.addEventListener('input', (e) => {
       bgMusic.volume = e.target.value;
+    });
+    sfxSlider.addEventListener('input', (e) => {
+      sfxVolume = parseFloat(e.target.value);
     });
     btnToggle.addEventListener('click', () => {
       playSFX('click');

@@ -36,7 +36,7 @@
     <h1 class="game-title">La Pirámide de Kha-Ra</h1>
     <p class="game-subtitle">Identifícate, Viajero</p>
     <div style="margin: 2rem 0; text-align: center;">
-      <input type="text" id="login-username" class="login-input" placeholder="Nombre de Arqueólogo..." autocomplete="off" />
+      <input type="text" id="login-username" class="login-input" placeholder="Nombre de Arqueólogo..." autocomplete="off" maxlength="9" />
       <div style="margin-top: 1rem;">
         <label style="color:var(--gold-light); font-family:'Cinzel', serif; font-size:0.9rem;">Dificultad:</label>
         <select id="login-difficulty" class="login-input" style="width:auto; padding:0.3rem; margin-left:0.5rem;">
@@ -351,6 +351,15 @@
             <span style="font-size:1.2rem;">🔊</span>
           </div>
         </div>
+
+        <div style="margin-bottom: 2rem;">
+          <label for="sfx-volume" style="display:block; margin-bottom: 0.8rem; color:var(--gold-light); font-family:'Cinzel',serif; font-size:1.1rem; letter-spacing:0.1em;">Volumen de Efectos</label>
+          <div style="display:flex; align-items:center; gap: 0.8rem; justify-content:center;">
+            <span style="font-size:1.2rem;">🔈</span>
+            <input type="range" id="sfx-volume" min="0" max="1" step="0.05" value="0.5" class="custom-slider" />
+            <span style="font-size:1.2rem;">🔊</span>
+          </div>
+        </div>
         <button id="btn-music-toggle" class="btn btn-primary" style="width:100%; font-size:1.1rem;">⏸ Pausar Música</button>
       </div>
     </div>
@@ -406,14 +415,28 @@
         <button class="modal-close" onclick="closeModal('modal-map')">✕</button>
       </div>
       <div class="modal-body">
-        <div class="map-container">
-           <div class="map-node" id="map-node-1">1. Entrada</div><div class="map-line"></div>
-           <div class="map-node" id="map-node-2">2. Archivo</div><div class="map-line"></div>
-           <div class="map-node" id="map-node-3">3. Santuario</div><div class="map-line"></div>
-           <div class="map-node" id="map-node-4">4. Ofrendas</div><div class="map-line"></div>
-           <div class="map-node" id="map-node-5">5. Falsa Tumba</div><div class="map-line"></div>
-           <div class="map-node" id="map-node-6">6. Armería</div><div class="map-line"></div>
-           <div class="map-node" id="map-node-7">7. Tumba Verdadera</div>
+        <div class="map-container pyramid-layout">
+           <!-- Base -->
+           <div class="map-node" id="map-node-1" style="bottom: 10%; left: 50%; transform: translateX(-50%);">1. Entrada</div>
+           
+           <!-- Mid-Lower -->
+           <div class="map-node" id="map-node-2" style="bottom: 30%; left: 30%;">2. Pasillo</div>
+           <div class="map-node" id="map-node-3" style="bottom: 30%; left: 70%;">3. Archivo</div>
+           
+           <!-- Mid-Upper -->
+           <div class="map-node" id="map-node-4" style="bottom: 55%; left: 35%;">4. Santuario</div>
+           <div class="map-node" id="map-node-5" style="bottom: 55%; left: 65%;">5. Ofrendas</div>
+           
+           <!-- Sub-Apex -->
+           <div class="map-node" id="map-node-6" style="bottom: 75%; left: 50%; transform: translateX(-50%);">6. Armería</div>
+           
+           <!-- Apex -->
+           <div class="map-node" id="map-node-7" style="bottom: 92%; left: 50%; transform: translateX(-50%);">7. Tumba</div>
+
+           <svg class="map-svg-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+             <!-- Connections will be stylized in CSS -->
+             <path d="M50,90 L30,70 L35,45 L50,25 L65,45 L70,70 Z" fill="none" stroke="var(--gold)" stroke-width="0.5" opacity="0.3" />
+           </svg>
         </div>
       </div>
     </div>
