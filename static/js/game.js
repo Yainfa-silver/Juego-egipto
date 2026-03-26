@@ -135,7 +135,8 @@ async function login() {
       const map = {
         'perfeccionista': '🏅 Perfeccionista',
         'speedrunner': '🏅 Speedrunner',
-        'lector': '🏅 Lector'
+        'lector': '🏅 Lector',
+        'final_verdadero': '👑 Final Verdadero'
       };
       const badges = data.achievements.map(a => `<span class="badge" style="background:rgba(201,162,39,0.2); border:1px solid var(--gold); padding:0.2rem 0.5rem; border-radius:4px; margin:0.2rem; display:inline-block; font-size:0.85rem; color:var(--gold-light);">${map[a] || a}</span>`).join('');
       achEl.innerHTML = `<strong>🏆 Tus Logros Obtenidos</strong><br>${badges}`;
@@ -313,6 +314,32 @@ async function moveToRoom(room) {
   renderAll();
 }
 
+// ─── Weight descriptors ───────────────────────────────────────
+const WEIGHT_DATA = {
+  1: { icon: '❤️', name: 'Corazón de Piedra',  desc: 'El corazón del difunto que Anubis pesará contra la Pluma de la Verdad. Si es puro, el alma pasa al Más Allá.' },
+  2: { icon: '🪶', name: 'Pluma de la Verdad',  desc: 'La pluma sagrada de Maat, diosa del orden. El corazón debe pesar lo mismo que ella para superar el Juicio de Osiris.' },
+  3: { icon: '🟡', name: 'Lingote de Oro',      desc: 'Un fragmento de oro con inscripciones del faraón. La balanza aguarda su correcta colocación en el ritual sagrado.' }
+};
+
+function inspectWeight(weightId) {
+  const wd = WEIGHT_DATA[weightId];
+  if (!wd) return;
+  playSFX('click');
+  document.getElementById('inspect-icon').textContent = wd.icon;
+  document.getElementById('inspect-desc').textContent = `${wd.name}\n\n${wd.desc}`;
+  // Remove previous pickup btn if any
+  const old = document.getElementById('btn-weight-pickup');
+  if (old) old.remove();
+  const btn = document.createElement('button');
+  btn.id = 'btn-weight-pickup';
+  btn.className = 'btn btn-sm';
+  btn.textContent = '⚖️ Recoger';
+  btn.style.marginTop = '1rem';
+  btn.addEventListener('click', () => { closeAllModals(); pickupItem('weight', weightId); });
+  document.getElementById('inspect-desc').after(btn);
+  openModal('modal-inspect');
+}
+
 async function pickupItem(item, opts = null) {
   playSFX('click');
   const endpoint = item === 'weight' ? '/api/pickup_weight' : '/api/pickup';
@@ -446,6 +473,12 @@ function openDictionary() {
 function openPapiro(which) {
   if (which === 1 && !gameState.has_papiro1) return;
   if (which === 2 && !gameState.has_papiro2) return;
+
+  // Block reading without dictionary
+  if (!gameState.has_dictionary) {
+    toast('📜 Son jeroglíficos... no sé lo que significan. Necesito el Diccionario.', 'info');
+    return;
+  }
 
   const hasDic = gameState.has_dictionary;
   const modal = document.getElementById(`modal-papiro${which}`);
@@ -704,7 +737,8 @@ function renderRoom() {
   const localWeights = gameState.pos_weights || [];
   localWeights.forEach(w => {
     if (!collectedW.includes(w.id)) {
-      const obj = makeObject(getWeightIcon(w.id), "Figura Pesada", w.x, w.y, () => pickupItem('weight', w.id));
+      const wData = WEIGHT_DATA[w.id];
+      const obj = makeObject(wData ? wData.icon : '⚖️', wData ? wData.name : 'Figura Pesada', w.x, w.y, () => inspectWeight(w.id));
       objContainer.appendChild(obj);
     }
   });
@@ -876,7 +910,14 @@ function renderInventory() {
   if (gameState.has_secret_relic) items.push({ icon: '🏺', label: 'Reliquia', action: () => inspectItem('🏺', 'Reliquia de Kha-Ra\n\nDesprende un aura oscura y milenaria. Has demostrado gran valía al encontrar el Secreto de la Vida.') });
 
   const collWeights = gameState.weights_collected || [];
-  collWeights.forEach(w => items.push({ icon: getWeightIcon(w), label: getWeightName(w), action: null }));
+  collWeights.forEach(w => {
+    const wd = WEIGHT_DATA[w];
+    items.push({
+      icon: wd ? wd.icon : '⚖️',
+      label: wd ? wd.name : 'Peso',
+      action: wd ? () => inspectItem(wd.icon, `${wd.name}\n\n${wd.desc}`) : null
+    });
+  });
 
   if (gameState.puzzle_pieces.includes(1)) items.push({ icon: '<span class="piece-icon">𓂀</span>', label: 'Pieza 1', raw: true });
   if (gameState.puzzle_pieces.includes(2)) items.push({ icon: '<span class="piece-icon">𓄿</span>', label: 'Pieza 2', raw: true });

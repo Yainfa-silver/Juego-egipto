@@ -512,7 +512,6 @@ def complete_puzzle():
     if new_achievements:
         c.execute('UPDATE users SET achievements = ? WHERE id = ?', (json.dumps(my_achievements), game['user_id']))
         conn.commit()
-    conn.close()
 
     secret = game['secret_text']
     base_msg = f'¡Has escapado! El secreto era: «{secret}»'
@@ -531,7 +530,9 @@ def complete_puzzle():
         base_msg = f'Saliste corriendo tropezando con cada piedra. Apenas escapaste con el secreto: «{secret}»'
     else:
         ending_title = "FINAL NORMAL: Arqueólogo Sobreviviente"
-        
+    
+    conn.close()
+
     msg = f'{ending_title} | {base_msg}'
     if new_achievements:
         msg += f' ¡Logros ganados: {", ".join(new_achievements)}!'

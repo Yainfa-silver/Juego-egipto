@@ -1,7 +1,121 @@
 ====================================================================
-      ESPECIFICACIÓN DE REQUISITOS DE SOFTWARE (SRS) v2.5
+      ESPECIFICACIÓN DE REQUISITOS DE SOFTWARE (SRS) v2.6
                   PROYECTO: LA PIRÁMIDE DE KHA-RA
 ====================================================================
+
+1. RESUMEN EJECUTIVO
+--------------------
+El presente documento define el alcance técnico y funcional del sistema "La Pirámide de Kha-Ra", un entorno de videojuego web 2D de alta fidelidad basado en el género "Point & Click / Escape Room". La arquitectura está diseñada para una experiencia SPA (Single Page Application) persistente y segura.
+
+[ESTADO ACTUAL: PRODUCCIÓN - 100% IMPLEMENTADO]
+
+2. ALCANCE FUNCIONAL (BASELINE)
+-------------------------------
+El sistema se compone de las siguientes funcionalidades, las cuales han sido validadas y se encuentran operativas:
+
+RF01 - Arquitectura de Escenario (7 Salas):
+       Infraestructura de navegación horizontal adyacente (±1) entre exactamente 7 estancias.
+       [ESTADO: COMPLETADO] - Implementado en logic.py y visualizado en el mapa dinámico.
+
+RF02 - Sistema de Iluminación y Supervivencia:
+       Mecánica de "Oscuridad Absoluta" en salas 4 a 7. Impide el acceso y la visibilidad sin el objeto "Antorcha".
+       [ESTADO: COMPLETADO] - Validado en backend (app.api/move) y frontend (darkness-overlay).
+
+RF03 - Sistema de Manufactura (Crafting):
+       Lógica de combinación de items: [Palo Seco] + [Vendas Antiguas] = [Antorcha].
+       [ESTADO: COMPLETADO] - Motor de crafteo disponible en app.api/craft.
+
+RF04 - Motor de Enigmas Procedimentales:
+       Generación dinámica en backend de 2 micro-enigmas criptográficos por partida:
+       - Enigma 1: Basado en Papiro de Ra y Diccionario.
+       - Enigma 2: Basado en Papiro de Osiris (Secuencia Directa).
+       [ESTADO: COMPLETADO] - Criptografía dinámica generada en cada inicio de sesión.
+
+RF05 - Puzle de la Balanza de Anubis:
+       Recolección aleatoria de 3 pesos sagrados. Resolución mediante ordenamiento lógico (Corazón, Pluma, Oro).
+       [ESTADO: COMPLETADO] - Integrado con sistema de inventario y validación de balanza.
+
+RF06 - Minijuego de Cerradura Cilíndrica:
+       Cerradura de 3 discos numéricos para obtención de la Reliquia (Sala 6). Código: 3-1-4 (Pi).
+       [ESTADO: COMPLETADO] - Minijuego interactivo con penalización por fallo.
+
+RF07 - Gestión de Entidades (El Guardián):
+       IA de patrulla aleatoria. Tiempo de gracia: 3 min. Intervalos: 45-75s. Tiempo de reacción: 12s.
+       [ESTADO: COMPLETADO] - Motor de patrulla JS activo tras periodo de gracia.
+
+RF08 - Control de Tiempo y Dificultad:
+       - Modo Normal: 900s.
+       - Modo Faraón: 420s.
+       - Pistas Divinas (-120s por uso).
+       [ESTADO: COMPLETADO] - Sistema de cronómetro sincronizado con penalizaciones.
+
+RF09 - Lógica de Errores (Trampa de Arena):
+       Penalización acumulativa. Cada 3 acciones erróneas resta 120s adicionales.
+       [ESTADO: COMPLETADO] - Contador de errores persistente en la sesión.
+
+RF10 - Persistencia y Sesión:
+       Almacenamiento en SQLite de estado de juego, inventario y progreso. Soporte para reanudación.
+       [ESTADO: COMPLETADO] - Persistencia robusta vía game.db.
+
+RF11 - Resultados y Gamificación:
+       - 3 Finales (Verdadero, Normal, Cobarde).
+       - Logros: Perfeccionista, Speedrunner, Lector, Final Verdadero.
+       - Clasificación: Salón de la Fama (Top 3, Easy/Hard por color).
+       [ESTADO: COMPLETADO] - Pantallas de victoria/derrota y leaderboard configurados.
+
+RF12 - Rejugabilidad Dinámica (Notas de Diario):
+       Pool de 20 mensajes atmosféricos aleatorios. Cada partida selecciona 5 notas para salas aleatorias.
+       [ESTADO: COMPLETADO] - Implementado para evitar la repetitividad y fomentar la exploración.
+
+RF13 - Interfaz de Inicio Optimizada: [MODIFICACIÓN v2.6]
+       La pantalla de login muestra el formulario de identificación y el Salón de la Fama en disposición
+       de dos columnas (lado a lado), sin scroll global. Límite de 9 caracteres en el nombre de usuario.
+       [ESTADO: COMPLETADO] - Layout responsivo en index.html y style.css.
+
+RF14 - Navegación entre Pantallas de Inicio: [NUEVO v2.6]
+       Botón "⇠ Volver" fijo en la esquina superior izquierda de la pantalla de inicio de partida.
+       Permite al usuario regresar a la pantalla de identificación para cambiar de nombre sin recargar.
+       [ESTADO: COMPLETADO] - Implementado en index.html (btn-back-to-login) y game.js (goBackToLogin).
+
+RF15 - Persistencia de Sesión en Pestaña: [NUEVO v2.6]
+       El sistema recuerda al jugador identificado mientras la pestaña del navegador permanezca abierta.
+       Al recargar la página, el cliente re-autentica automáticamente con el servidor y redirige al
+       jugador a la pantalla de inicio o reanuda su partida en curso sin necesidad de reingresar el nombre.
+       Al cerrar la pestaña o el navegador, la sesión local se destruye (sessionStorage).
+       [ESTADO: COMPLETADO] - Implementado con sessionStorage en game.js y lógica de auto-recovery.
+
+RF16 - Feedback Visual de Logros en Victoria: [NUEVO v2.6]
+       La pantalla de victoria muestra los logros conseguidos en la partida como badges dorados.
+       [ESTADO: COMPLETADO] - Implementado en showVictory() en game.js y #achievements-earned en index.html.
+
+RF17 - Evento Atmosférico en Sala 7: [NUEVO v2.6]
+       Si el jugador llega a la Sala 7 (Cámara del Faraón) portando la Reliquia de Kha-Ra, se activa
+       un evento especial con animación de temblor de pantalla y mensaje atmosférico único.
+       [ESTADO: COMPLETADO] - Implementado en la lógica de moveToRoom() en game.js.
+
+3. ALCANCE NO FUNCIONAL Y SEGURIDAD
+------------------------------------
+- SSoT (Single Source of Truth): Toda la validación lógica ocurre en el servidor Python/Flask.
+- SPA (Single Page Application): Navegación fluida sin recargas mediante Fetch API.
+- Multimedia: Audio contextual dinámico con controles de volumen independientes.
+- Sin scroll global: La página principal no genera scroll vertical en ninguna pantalla (overflow: hidden).
+- Validación de nombre: Máximo 9 caracteres permitidos (HTML maxlength + validación backend).
+
+4. EXCLUSIONES DE ALCANCE (OUT OF SCOPE)
+-----------------------------------------
+- Implementación de modo multijugador.
+- Adaptación nativa móvil completa (mantenido web responsive).
+- Modificación de la lógica de jeroglíficos aleatorios heredada.
+
+5. CONCLUSIÓN DEL ANALISTA
+---------------------------
+Tras el desarrollo de la iteración v2.6, el software mantiene el 100% de los requisitos originales e
+incorpora mejoras de interfaz y experiencia de usuario solicitadas: diseño de dos columnas, navegación
+mejorada entre pantallas, persistencia de sesión por pestaña y feedback visual de logros. El producto
+se considera APTO para despliegue en entorno de producción.
+
+
+
 
 1. RESUMEN EJECUTIVO
 --------------------
