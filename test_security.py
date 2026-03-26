@@ -15,7 +15,7 @@ def run_tests():
     print("Starting tests...")
     
     # Login
-    res = client.post('/api/login', json={'username': 'test_hacker'})
+    res = client.post('/api/login', json={'username': 'hacker'})
     assert res.status_code == 200
     
     # Start game

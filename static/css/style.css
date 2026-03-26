@@ -26,7 +26,7 @@
 
 /* ─── Reset ─────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'IM Fell English', serif; }
+html, body { width: 100%; height: 100%; overflow-x: hidden; font-family: 'IM Fell English', serif; }
 
 body {
   background: var(--bg);
@@ -48,7 +48,7 @@ body {
   align-items: center; justify-content: center;
   background: #0a0705 url('/static/img/main_bg.png') center/cover no-repeat;
   z-index: 10;
-  overflow: hidden;
+  padding: 1rem;
 }
 #screen-login::before, #screen-start::before {
   content: '';
@@ -59,15 +59,53 @@ body {
 .start-content { 
   position: relative; 
   text-align: center; 
-  padding: 3rem; 
+  padding: 2rem; 
   z-index: 5;
   background: rgba(26, 18, 8, 0.4);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(201, 162, 39, 0.2);
   border-radius: 20px;
   box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 30px rgba(201, 162, 39, 0.1);
-  max-width: 900px;
-  width: 90%;
+  max-width: 1000px;
+  width: 95%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-layout-split {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.login-form-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.leaderboard-side {
+  flex: 1;
+  max-width: 450px;
+  background: rgba(26, 18, 8, 0.6);
+  border: 1px solid rgba(201, 162, 39, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.leaderboard-table-container {
+  overflow-y: auto;
+  max-height: 250px;
 }
 
 .game-title {
@@ -91,22 +129,7 @@ body {
   0%,100% { text-shadow: 0 0 30px rgba(240,192,64,0.8), 0 0 60px rgba(240,192,64,0.4); }
   50%     { text-shadow: 0 0 50px rgba(240,192,64,1),   0 0 90px rgba(240,192,64,0.6); }
 }
-.scarab-logo {
-  width: 120px;
-  height: 120px;
-  margin: 0 auto 1.5rem;
-  background: url('/static/img/scarab_seal.png') center/contain no-repeat;
-  filter: drop-shadow(0 0 15px rgba(240, 192, 64, 0.5));
-  animation: scarabFloat 6s ease-in-out infinite, scarabGlow 4s ease-in-out infinite;
-}
-@keyframes scarabFloat {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-15px) rotate(5deg); }
-}
-@keyframes scarabGlow {
-  0%, 100% { filter: drop-shadow(0 0 15px rgba(240, 192, 64, 0.5)); }
-  50% { filter: drop-shadow(0 0 30px rgba(240, 192, 64, 0.8)); }
-}
+
 .start-instructions {
   color: var(--cream);
   font-size: 1rem;
@@ -159,15 +182,30 @@ body {
 .btn-success { border-color: var(--green); color: var(--green); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
-.btn-secondary {
-  background: transparent;
-  color: var(--gold);
-  border: 1px solid var(--gold);
-  padding: 0.7rem 1.8rem;
-}
 .btn-secondary:hover {
   background: rgba(201,162,39,0.1);
   box-shadow: 0 0 15px rgba(201,162,39,0.4);
+}
+
+.btn-back-absolute {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  background: transparent;
+  border: 1px solid rgba(201,162,39,0.3);
+  color: var(--muted);
+  padding: 0.4rem 0.8rem;
+  font-family: 'Cinzel', serif;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+  z-index: 10;
+}
+.btn-back-absolute:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(201, 162, 39, 0.1);
 }
 
 .login-input {
@@ -366,6 +404,7 @@ body {
     opacity: 1; 
     transform: scale(1.15); 
     box-shadow: 0 0 25px #f0c040, 0 0 45px rgba(240, 192, 64, 0.8);
+    filter: brightness(1.2);
   }
 }
 
@@ -872,6 +911,9 @@ body {
 }
 .leaderboard-table td:first-child { text-align: left; }
 .leaderboard-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.leaderboard-table tbody tr:hover {
+  background: rgba(201, 162, 39, 0.1);
+}
 
 .leaderboard-table tbody tr:nth-child(1) td {
   color: #ffd700;

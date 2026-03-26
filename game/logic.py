@@ -35,12 +35,45 @@ WEIGHTS_POSITIONS = [
     [{"id": 1, "room": 4, "x": "40%", "y": "10%", "weight": "corazon"}, {"id": 2, "room": 6, "x": "55%", "y": "30%", "weight": "pluma"}, {"id": 3, "room": 7, "x": "15%", "y": "20%", "weight": "oro"}]
 ]
 
+DIARY_MESSAGES = [
+    "La puerta se selló a mi espalda. No veo cómo volver. El aire está pesado.",
+    "Los dioses dejaron pergaminos. Alguien los partió intentando descifrarlos... o algo peor.",
+    "He encontrado las salas profundas. La estatua de Anubis aguarda. Exige pesado tributo.",
+    "¡Es inútil! La verdad es ligera como una pluma, el motor humano es carne, pero el materialismo ciega más.",
+    "La tumba real. Rebosa riqueza, pero no me servirá de nada si perezco en la oscuridad eternamente.",
+    "El eco de mis pasos parece seguido por susurros en una lengua olvidada.",
+    "Siento que los ojos de las estatuas se mueven cuando no las miro directamente.",
+    "He encontrado restos de una expedición anterior. No hay señales de sus cuerpos, solo sus diarios.",
+    "El escarabajo de jade brilla con una luz tenue en la penumbra. ¿Es una señal?",
+    "Las paredes están cubiertas de inscripciones que hablan de un faraón que nunca murió.",
+    "El aceite de las lámparas se consume más rápido de lo normal. La oscuridad acecha.",
+    "Bajo el suelo de arena, he oído el sonido de mecanismos antiguos moviéndose.",
+    "La sed empieza a nublar mi juicio, pero la puerta dorada debe estar cerca.",
+    "No todos los tesoros de Egipto son de oro; algunos son secretos que deberían permanecer enterrados.",
+    "La maldición no era una advertencia, sino una promesa para los intrusos.",
+    "He visto una sombra cruzar el pasillo. No era mi propia sombra.",
+    "El río Nilo parece fluir en sentido contrario en el mapa de esta pared.",
+    "Si encuentras esta nota, no te detengas. Sigue avanzando hacia la luz del sol.",
+    "El guardian no duerme. Él es la propia piedra de la pirámide.",
+    "Solo aquel que no teme al juicio de Osiris encontrará la salida."
+]
+
+
 def random_positions():
     dic_pos  = random.choice(DICCIONARIO_POSITIONS)
     p1_pos   = random.choice(PAPIRO1_POSITIONS)
     p2_pos   = random.choice(PAPIRO2_POSITIONS)
     w_pos    = random.choice(WEIGHTS_POSITIONS)
-    return json.dumps(dic_pos), json.dumps(p1_pos), json.dumps(p2_pos), json.dumps(w_pos)
+    
+    # Randomize 5 notes for the current session
+    rooms = list(range(1, 8))
+    random.shuffle(rooms)
+    selected_rooms = rooms[:5]
+    selected_msgs = random.sample(DIARY_MESSAGES, 5)
+    
+    notes_map = {str(rm): msg for rm, msg in zip(selected_rooms, selected_msgs)}
+    
+    return json.dumps(dic_pos), json.dumps(p1_pos), json.dumps(p2_pos), json.dumps(w_pos), json.dumps(notes_map)
 
 def generate_random_codes():
     indices = list(range(10))

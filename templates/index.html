@@ -1,564 +1,633 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>La Pirámide de Kha-Ra — Escape Egipcio</title>
-  <meta name="description" content="Mini juego de aventura point & click ambientado en una pirámide egipcia. Resuelve los enigmas, descifra los jeroglíficos y escapa antes de que se agote el tiempo." />
+  <meta name="description"
+    content="Mini juego de aventura point & click ambientado en una pirámide egipcia. Resuelve los enigmas, descifra los jeroglíficos y escapa antes de que se agote el tiempo." />
   <link rel="stylesheet" href="/static/css/style.css" />
   <style>
-  @keyframes shakeConfig {
-    0% { transform: translate(1px, 1px) rotate(0deg); }
-    10% { transform: translate(-1px, -2px) rotate(-1deg); }
-    20% { transform: translate(-3px, 0px) rotate(1deg); }
-    30% { transform: translate(3px, 2px) rotate(0deg); }
-    40% { transform: translate(1px, -1px) rotate(1deg); }
-    50% { transform: translate(-1px, 2px) rotate(-1deg); }
-    60% { transform: translate(-3px, 1px) rotate(0deg); }
-    70% { transform: translate(3px, 1px) rotate(-1deg); }
-    80% { transform: translate(-1px, -1px) rotate(1deg); }
-    90% { transform: translate(1px, 2px) rotate(0deg); }
-    100% { transform: translate(1px, -2px) rotate(-1deg); }
-  }
-  .shake-screen {
-    animation: shakeConfig 0.4s cubic-bezier(.36,.07,.19,.97) both infinite;
-  }
+    @keyframes shakeConfig {
+      0% {
+        transform: translate(1px, 1px) rotate(0deg);
+      }
+
+      10% {
+        transform: translate(-1px, -2px) rotate(-1deg);
+      }
+
+      20% {
+        transform: translate(-3px, 0px) rotate(1deg);
+      }
+
+      30% {
+        transform: translate(3px, 2px) rotate(0deg);
+      }
+
+      40% {
+        transform: translate(1px, -1px) rotate(1deg);
+      }
+
+      50% {
+        transform: translate(-1px, 2px) rotate(-1deg);
+      }
+
+      60% {
+        transform: translate(-3px, 1px) rotate(0deg);
+      }
+
+      70% {
+        transform: translate(3px, 1px) rotate(-1deg);
+      }
+
+      80% {
+        transform: translate(-1px, -1px) rotate(1deg);
+      }
+
+      90% {
+        transform: translate(1px, 2px) rotate(0deg);
+      }
+
+      100% {
+        transform: translate(1px, -2px) rotate(-1deg);
+      }
+    }
+
+    .shake-screen {
+      animation: shakeConfig 0.4s cubic-bezier(.36, .07, .19, .97) both infinite;
+    }
   </style>
 </head>
+
 <body>
 
-<!-- Particle effect for the entire menu -->
-<div class="particle-container" id="menu-particles"></div>
+  <!-- Particle effect for the entire menu -->
+  <div class="particle-container" id="menu-particles"></div>
 
-<!-- ══════════════════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════════════════
      SCREEN: LOGIN
 ══════════════════════════════════════════════════════════ -->
-<div id="screen-login">
-  <div class="start-content">
-    <div class="scarab-logo"></div>
-    <h1 class="game-title">La Pirámide de Kha-Ra</h1>
-    <p class="game-subtitle">Identifícate, Viajero</p>
-    <div style="margin: 2rem 0; text-align: center;">
-      <input type="text" id="login-username" class="login-input" placeholder="Nombre de Arqueólogo..." autocomplete="off" maxlength="9" />
-      <div style="margin-top: 1rem;">
-        <label style="color:var(--gold-light); font-family:'Cinzel', serif; font-size:0.9rem;">Dificultad:</label>
-        <select id="login-difficulty" class="login-input" style="width:auto; padding:0.3rem; margin-left:0.5rem;">
-          <option value="easy">Normal (15 min)</option>
-          <option value="hard">Modo Faraón (7 min)</option>
-        </select>
-      </div>
-      <br>
-      <button id="btn-login" class="btn btn-primary" style="margin-top: 1rem;">Entrar a la Pirámide</button>
-      <div id="achievements-container" style="margin-top:1.5rem; font-size:0.9rem;"></div>
-    </div>
+  <div id="screen-login">
+    <div class="start-content">
+      <h1 class="game-title">La Pirámide de Kha-Ra</h1>
+      <p class="game-subtitle">Identifícate, Viajero</p>
 
-    <!-- Leaderboard -->
-    <div id="leaderboard-container" style="margin-top: 3rem; background:rgba(26,18,8,0.7); border:1px solid rgba(201,162,39,0.3); border-radius:8px; padding:1.5rem;">
-      <h3 style="color:var(--gold-light); font-family:'Cinzel Decorative',serif; margin-bottom:1rem; font-size:1.2rem; letter-spacing:0.1em; text-transform:uppercase;">🏆 Salón de la Fama 🏆</h3>
-      <table id="leaderboard-table" class="leaderboard-table">
-        <thead>
-          <tr>
-            <th>Arqueólogo</th>
-            <th style="text-align:right;">Tiempo de Escape</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Injected by JS -->
-        </tbody>
-      </table>
+      <div class="main-layout-split">
+        <!-- Left Side: Login Form -->
+        <div class="login-form-side">
+          <input type="text" id="login-username" class="login-input" placeholder="Nombre de Arqueólogo..."
+            autocomplete="off" maxlength="9" />
+          
+          <div style="margin-top: 1.5rem;">
+            <label style="color:var(--gold-light); font-family:'Cinzel', serif; font-size:0.9rem;">Dificultad:</label>
+            <select id="login-difficulty" class="login-input" style="width:auto; padding:0.3rem; margin-left:0.5rem;">
+              <option value="easy">Normal (15 min)</option>
+              <option value="hard">Modo Faraón (7 min)</option>
+            </select>
+          </div>
+
+          <button id="btn-login" class="btn btn-primary" style="margin-top: 2rem;">Entrar a la Pirámide</button>
+          <div id="achievements-container" style="margin-top:1.5rem; font-size:0.9rem;"></div>
+        </div>
+
+        <!-- Right Side: Leaderboard -->
+        <div class="leaderboard-side">
+          <h3 style="color:var(--gold-light); font-family:'Cinzel Decorative',serif; margin-bottom:1rem; font-size:1.1rem; letter-spacing:0.1em; text-transform:uppercase;">
+            🏆 Salón de la Fama 🏆
+          </h3>
+          <div class="leaderboard-table-container">
+            <table id="leaderboard-table" class="leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Arqueólogo</th>
+                  <th style="text-align:right;">Tiempo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Injected by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ══════════════════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════════════════
      SCREEN: START
 ══════════════════════════════════════════════════════════ -->
-<div id="screen-start" hidden>
-  <div class="start-content">
-    <div class="scarab-logo"></div>
-    <h1 class="game-title">La Pirámide de Kha-Ra</h1>
-    <h2 id="welcome-message" style="color:var(--gold); font-family:'Cinzel',serif; font-size:1.5rem; margin-bottom: 0.5rem;"></h2>
-    <div id="achievements-display" style="margin-bottom: 1rem; text-align: center;"></div>
-    <p class="start-instructions" style="margin-bottom: 1rem;">
-      Estás atrapado en las profundidades de la pirámide.<br>
-      Debes explorar el lugar, descifrar jeroglíficos
-      y escapar antes de que se agote el tiempo.
-    </p>
-    <div style="display:flex; gap:1rem; justify-content:center; margin-top:1.5rem;">
-      <button id="btn-resume" class="btn btn-primary" style="display:none;">Continuar Partida</button>
-      <button id="btn-start" class="btn btn-secondary">Nueva Partida</button>
+  <div id="screen-start" hidden>
+    <button id="btn-back-to-login" class="btn-back-absolute" title="Volver al Inicio">⇠ Volver</button>
+    <div class="start-content">
+      <div class="scarab-logo"></div>
+      <h1 class="game-title">La Pirámide de Kha-Ra</h1>
+      <h2 id="welcome-message"
+        style="color:var(--gold); font-family:'Cinzel',serif; font-size:1.5rem; margin-bottom: 0.5rem;"></h2>
+      <div id="achievements-display" style="margin-bottom: 1rem; text-align: center;"></div>
+      <p class="start-instructions" style="margin-bottom: 1rem;">
+        Estás atrapado en las profundidades de la pirámide.<br>
+        Debes explorar el lugar, descifrar jeroglíficos
+        y escapar antes de que se agote el tiempo.
+      </p>
+      <div style="display:flex; gap:1rem; justify-content:center; margin-top:1.5rem; flex-wrap:wrap;">
+        <button id="btn-resume" class="btn btn-primary" style="display:none;">Continuar Partida</button>
+        <button id="btn-start" class="btn btn-secondary">Nueva Partida</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ══════════════════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════════════════
      SCREEN: GAME
 ══════════════════════════════════════════════════════════ -->
-<div id="screen-game" hidden>
+  <div id="screen-game" hidden>
 
-  <!-- Header -->
-  <header class="game-header">
-    <span class="header-title">🏺 Kha-Ra</span>
-    <span id="header-room-label" class="header-room-label">Sala 1 — Cámara de Entrada</span>
-    <div style="display:flex; align-items:center; gap: 1rem;">
-      <div id="timer">05:00</div>
-      <button id="btn-settings" class="btn btn-sm" style="padding: 0.2rem 0.5rem; font-size:1.2rem; cursor:pointer;" title="Ajustes">⚙️</button>
-    </div>
-  </header>
-
-  <!-- Main -->
-  <main class="game-main">
-
-    <!-- Scene panel (left) -->
-    <section id="scene-panel" style="position:relative;">
-      <div id="darkness-overlay" class="darkness-overlay" hidden></div>
-      <img id="room-bg-img" class="room-bg" src="/static/img/room1.png" alt="Sala actual" />
-      <div class="room-overlay"></div>
-      <div id="scene-objects" style="position:absolute;inset:0;pointer-events:none;">
-        <!-- Objects injected by JS; pointer-events re-enabled per object -->
+    <!-- Header -->
+    <header class="game-header">
+      <span class="header-title">🏺 Kha-Ra</span>
+      <span id="header-room-label" class="header-room-label">Sala 1 — Cámara de Entrada</span>
+      <div style="display:flex; align-items:center; gap: 1rem;">
+        <div id="timer">05:00</div>
+        <button id="btn-settings" class="btn btn-sm" style="padding: 0.2rem 0.5rem; font-size:1.2rem; cursor:pointer;"
+          title="Ajustes">⚙️</button>
       </div>
-    </section>
+    </header>
 
-    <!-- Sidebar (right) -->
-    <aside id="sidebar">
+    <!-- Main -->
+    <main class="game-main">
 
-      <!-- Button status -->
-      <div class="sidebar-section">
-        <h3>⚡ Botones</h3>
-        <div class="buttons-status">
-          <div class="btn-indicator" id="btn-ind-1" title="Botón 1 (Enigma 1)">1</div>
-          <div class="btn-indicator" id="btn-ind-2" title="Botón 2 (Enigma 2)">2</div>
-          <div class="btn-indicator" id="btn-ind-3" title="Botón 3 (Oculto)">3</div>
+      <!-- Scene panel (left) -->
+      <section id="scene-panel" style="position:relative;">
+        <div id="darkness-overlay" class="darkness-overlay" hidden></div>
+        <img id="room-bg-img" class="room-bg" src="/static/img/room1.png" alt="Sala actual" />
+        <div class="room-overlay"></div>
+        <div id="scene-objects" style="position:absolute;inset:0;pointer-events:none;">
+          <!-- Objects injected by JS; pointer-events re-enabled per object -->
         </div>
-      </div>
+      </section>
 
-      <!-- Inventory -->
-      <div class="sidebar-section">
-        <h3>🎒 Inventario</h3>
-        <div class="inventory-grid" id="inventory-grid">
-          <!-- Items injected by JS -->
+      <!-- Sidebar (right) -->
+      <aside id="sidebar">
+
+        <!-- Button status -->
+        <div class="sidebar-section">
+          <h3>⚡ Botones</h3>
+          <div class="buttons-status">
+            <div class="btn-indicator" id="btn-ind-1" title="Botón 1 (Enigma 1)">1</div>
+            <div class="btn-indicator" id="btn-ind-2" title="Botón 2 (Enigma 2)">2</div>
+            <div class="btn-indicator" id="btn-ind-3" title="Botón 3 (Oculto)">3</div>
+          </div>
         </div>
-      </div>
 
-      <!-- Guía rápida -->
-      <div class="sidebar-section">
-        <h3>📖 Guía</h3>
-        <div style="font-size:0.75rem;line-height:1.8;color:var(--muted);">
-          <p>• <span style="color:var(--sand);">Sala 1</span>: busca el botón oculto</p>
-          <p>• <span style="color:var(--sand);">Sala 2</span>: recoge el diccionario y el papiro</p>
-          <p>• <span style="color:var(--sand);">Sala 3</span>: descifra el papiro de Osiris</p>
-          <p>• Con las <strong>3 piezas</strong>: completa el puzzle para escapar</p>
+        <!-- Inventory -->
+        <div class="sidebar-section">
+          <h3>🎒 Inventario</h3>
+          <div class="inventory-grid" id="inventory-grid">
+            <!-- Items injected by JS -->
+          </div>
         </div>
-      </div>
 
-      <!-- Puzzle pieces status -->
-      <div class="sidebar-section">
-        <h3>🧩 Piezas del Puzzle</h3>
-        <div style="display:flex;gap:0.5rem;justify-content:center;margin-top:0.2rem;" id="pieces-status">
-          <!-- Rendered by JS inside inventory -->
+        <!-- Guía rápida -->
+        <div class="sidebar-section">
+          <h3>📖 Guía</h3>
+          <div style="font-size:0.75rem;line-height:1.8;color:var(--muted);">
+            <p>• <span style="color:var(--sand);">Sala 4</span>: equilibra la Balanza de Anubis</p>
+            <p>• <span style="color:var(--sand);">Sala 6</span>: descifra el cofre del tesoro</p>
+            <p>• <span style="color:var(--sand);">Crafteo</span>: Palo + Vendas = Antorcha</p>
+            <p>• Con las <strong>3 piezas</strong>: ve al Altar de la Sala 1</p>
+          </div>
         </div>
-      </div>
-      
-      <button id="btn-hint" class="btn btn-primary" style="margin-top:1.5rem; width:100%; font-size:0.8rem; padding:0.5rem;">👁 Pista Divina (-2 min)</button>
-      <button id="btn-map" class="btn btn-secondary" style="margin-top:0.5rem; width:100%; font-size:0.8rem; padding:0.5rem;" onclick="openModal('modal-map')">🗺 Ver Mapa</button>
 
-    </aside>
-  </main>
+        <!-- Puzzle pieces status -->
+        <div class="sidebar-section">
+          <h3>🧩 Piezas del Puzzle</h3>
+          <div style="display:flex;gap:0.5rem;justify-content:center;margin-top:0.2rem;" id="pieces-status">
+            <!-- Rendered by JS inside inventory -->
+          </div>
+        </div>
 
-  <!-- Footer navigation -->
-  <footer class="game-footer">
-    <span style="font-family:'Cinzel',serif;font-size:0.75rem;color:var(--muted);letter-spacing:0.1em;">NAVEGAR:</span>
-    <button class="nav-room-btn" id="nav-btn-1">⬛ Sala 1</button>
-    <button class="nav-room-btn" id="nav-btn-2">📜 Sala 2</button>
-    <button class="nav-room-btn" id="nav-btn-3">🌟 Sala 3</button>
-    <button class="nav-room-btn" id="nav-btn-4">⚖ Sala 4</button>
-    <button class="nav-room-btn" id="nav-btn-5">👑 Sala 5</button>
-    <button class="nav-room-btn" id="nav-btn-6">⚔ Sala 6</button>
-    <button class="nav-room-btn" id="nav-btn-7">🏺 Sala 7</button>
-  </footer>
+        <button id="btn-hint" class="btn btn-primary"
+          style="margin-top:1.5rem; width:100%; font-size:0.8rem; padding:0.5rem;">👁 Pista Divina (-2 min)</button>
+        <button id="btn-map" class="btn btn-secondary"
+          style="margin-top:0.5rem; width:100%; font-size:0.8rem; padding:0.5rem;" onclick="openModal('modal-map')">🗺
+          Ver Mapa</button>
 
-</div><!-- /screen-game -->
+      </aside>
+    </main>
 
-<!-- ══════════════════════════════════════════════════════════
+    <!-- Footer navigation -->
+    <footer class="game-footer">
+      <span
+        style="font-family:'Cinzel',serif;font-size:0.75rem;color:var(--muted);letter-spacing:0.1em;">NAVEGAR:</span>
+      <button class="nav-room-btn" id="nav-btn-1">⬛ Sala 1</button>
+      <button class="nav-room-btn" id="nav-btn-2">📜 Sala 2</button>
+      <button class="nav-room-btn" id="nav-btn-3">🌟 Sala 3</button>
+      <button class="nav-room-btn" id="nav-btn-4">⚖ Sala 4</button>
+      <button class="nav-room-btn" id="nav-btn-5">👑 Sala 5</button>
+      <button class="nav-room-btn" id="nav-btn-6">⚔ Sala 6</button>
+      <button class="nav-room-btn" id="nav-btn-7">🏺 Sala 7</button>
+    </footer>
+
+  </div><!-- /screen-game -->
+
+  <!-- ══════════════════════════════════════════════════════════
      SCREEN: VICTORY
 ══════════════════════════════════════════════════════════ -->
-<div id="screen-victory" hidden>
-  <div class="stars">✨🌟✨</div>
-  <h1 class="end-title">¡ESCAPASTE!</h1>
-  <p class="end-subtitle">Has resuelto los enigmas y escapado de la pirámide de Kha-Ra.</p>
-  <p style="color:var(--muted);font-size:0.9rem;margin-bottom:0.5rem;">El texto secreto que buscabas era:</p>
-  <div class="secret-text-box" id="secret-text-display">…</div>
-  <div class="end-actions">
-    <button id="btn-restart-victory" class="btn btn-primary">⚓ Jugar de Nuevo</button>
+  <div id="screen-victory" hidden>
+    <div class="stars">✨🌟✨</div>
+    <h1 class="end-title">¡ESCAPASTE!</h1>
+    <p class="end-subtitle">Has resuelto los enigmas y escapado de la pirámide de Kha-Ra.</p>
+    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:0.5rem;">El texto secreto que buscabas era:</p>
+    <div class="secret-text-box" id="secret-text-display">…</div>
+    <div id="achievements-earned" style="margin: 1rem 0; display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;"></div>
+    <div class="end-actions">
+      <button id="btn-restart-victory" class="btn btn-primary">⚓ Jugar de Nuevo</button>
+    </div>
   </div>
-</div>
 
-<!-- ══════════════════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════════════════
      SCREEN: GAME OVER
 ══════════════════════════════════════════════════════════ -->
-<div id="screen-gameover" hidden>
-  <h1 class="end-title" style="color:var(--red)">☠ ATRAPADO</h1>
-  <p class="end-subtitle">El tiempo se agotó. La pirámide te ha devorado...</p>
-  <p style="color:var(--muted);font-size:0.9rem;margin-top:1rem;">Los dátiles se marchitan. El sol ya no te alumbrará.</p>
-  <div class="end-actions">
-    <button id="btn-restart-gameover" class="btn btn-primary">⚓ Intentar de Nuevo</button>
+  <div id="screen-gameover" hidden>
+    <h1 class="end-title" style="color:var(--red)">☠ ATRAPADO</h1>
+    <p class="end-subtitle">El tiempo se agotó. La pirámide te ha devorado...</p>
+    <p style="color:var(--muted);font-size:0.9rem;margin-top:1rem;">Los dátiles se marchitan. El sol ya no te alumbrará.
+    </p>
+    <div class="end-actions">
+      <button id="btn-restart-gameover" class="btn btn-primary">⚓ Intentar de Nuevo</button>
+    </div>
   </div>
-</div>
 
-<!-- ══════════════════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════════════════
      MODAL OVERLAY  (all modals live here)
 ══════════════════════════════════════════════════════════ -->
-<div id="modal-overlay" class="modal-overlay" hidden>
+  <div id="modal-overlay" class="modal-overlay" hidden>
 
-  <!-- Dictionary -->
-  <div id="modal-dictionary" hidden>
-    <div class="modal" style="width:min(700px,90vw);">
-      <div class="modal-header">
-        <h2>📖 Diccionario de Jeroglíficos</h2>
-        <button class="modal-close" onclick="closeModal('modal-dictionary')">✕</button>
-      </div>
-      <div class="modal-body">
-        <img src="/static/img/diccionario.jpg" alt="Diccionario de Jeroglíficos" style="width:100%;border-radius:8px;border:1px solid var(--gold);box-shadow:var(--shadow-gold);" />
-        <div style="margin-top:1rem;display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;" id="dic-glyph-list">
-          <!-- Rendered dynamically -->
+    <!-- Dictionary -->
+    <div id="modal-dictionary" hidden>
+      <div class="modal" style="width:min(700px,90vw);">
+        <div class="modal-header">
+          <h2>📖 Diccionario de Jeroglíficos</h2>
+          <button class="modal-close" onclick="closeModal('modal-dictionary')">✕</button>
         </div>
-        <p style="font-size:0.75rem;color:var(--muted);margin-top:0.8rem;text-align:center;">
-          Usa este diccionario para identificar los jeroglíficos que aparecen en los papiros.
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Papiro 1 -->
-  <div id="modal-papiro1" hidden>
-    <div class="modal" style="width:min(500px,90vw);">
-      <div class="modal-header">
-        <h2>📜 Papiro de Ra</h2>
-        <button class="modal-close" onclick="closeModal('modal-papiro1')">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="papiro-content">
-          <p class="papiro-text"></p>
-          <div class="papiro-hint" hidden></div>
-          <div class="papiro-glyphs" hidden style="margin-top:0.8rem;"></div>
-        </div>
-        <div style="display:flex;gap:0.6rem;justify-content:center;margin-top:0.6rem;flex-wrap:wrap;">
-          <button class="btn" onclick="openDictionary()">📖 Ver Diccionario</button>
-          <button class="btn btn-success" onclick="openHieroPanel(1)">🔑 Introducir Combinación</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Papiro 2 -->
-  <div id="modal-papiro2" hidden>
-    <div class="modal" style="width:min(500px,90vw);">
-      <div class="modal-header">
-        <h2>📜 Papiro de Osiris</h2>
-        <button class="modal-close" onclick="closeModal('modal-papiro2')">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="papiro-content">
-          <p class="papiro-text"></p>
-          <div class="papiro-hint" hidden></div>
-          <div class="papiro-glyphs" hidden style="margin-top:0.8rem;"></div>
-        </div>
-        <p style="font-size:0.8rem;color:var(--muted);text-align:center;margin:0.6rem 0;">
-          Introduce los jeroglíficos mostrados en el papiro, en el mismo orden.
-        </p>
-        <div style="display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap;">
-          <button class="btn" onclick="openDictionary()">📖 Ver Diccionario</button>
-          <button class="btn btn-success" onclick="openHieroPanel(2)">🔑 Introducir Combinación</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Hieroglyph Input Panel -->
-  <div id="modal-hiero" hidden>
-    <div class="modal" style="width:min(480px,92vw);">
-      <div class="modal-header">
-        <h2 id="hiero-modal-title">🧩 Introducir Combinación</h2>
-        <button class="modal-close" onclick="closeModal('modal-hiero')">✕</button>
-      </div>
-      <div class="modal-body">
-        <p style="font-size:0.82rem;color:var(--muted);text-align:center;margin-bottom:0.8rem;">
-          Selecciona 3 jeroglíficos en el orden correcto según el papiro y el diccionario.
-        </p>
-
-        <!-- Selected slots -->
-        <div class="hiero-selected">
-          <div class="hiero-slot" id="hiero-slot-0"></div>
-          <div class="hiero-slot" id="hiero-slot-1"></div>
-          <div class="hiero-slot" id="hiero-slot-2"></div>
-        </div>
-
-        <!-- Hieroglyph buttons grid -->
-        <div class="hiero-grid" id="hiero-grid"></div>
-
-        <!-- Actions -->
-        <div class="hiero-actions">
-          <button id="btn-hiero-clear" class="btn btn-danger btn-sm">🗑 Borrar</button>
-          <button id="btn-hiero-submit" class="btn btn-success">✅ Confirmar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Puzzle Final -->
-  <div id="modal-puzzle" hidden>
-    <div class="modal" style="width:min(460px,92vw);">
-      <div class="modal-header">
-        <h2>🗿 Puzzle Final — El Altar de Kha-Ra</h2>
-        <button class="modal-close" onclick="closeModal('modal-puzzle')">✕</button>
-      </div>
-      <div class="modal-body">
-        <p class="puzzle-instructions">
-          Coloca las 3 piezas sagradas en el altar para abrir la puerta de la pirámide.<br>
-          <span style="font-size:0.8rem;color:var(--muted);">Haz clic en cada casilla para colocar la pieza.</span>
-        </p>
-
-        <div class="puzzle-board">
-          <div class="puzzle-slot" id="puzzle-slot-1" onclick="clickPuzzleSlot(1)">
-            <span style="font-size:0.75rem;text-align:center;">Pieza 1</span>
+        <div class="modal-body">
+          <img src="/static/img/diccionario.jpg" alt="Diccionario de Jeroglíficos"
+            style="width:100%;border-radius:8px;border:1px solid var(--gold);box-shadow:var(--shadow-gold);" />
+          <div style="margin-top:1rem;display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;" id="dic-glyph-list">
+            <!-- Rendered dynamically -->
           </div>
-          <div class="puzzle-slot" id="puzzle-slot-2" onclick="clickPuzzleSlot(2)">
-            <span style="font-size:0.75rem;text-align:center;">Pieza 2</span>
+          <p style="font-size:0.75rem;color:var(--muted);margin-top:0.8rem;text-align:center;">
+            Usa este diccionario para identificar los jeroglíficos que aparecen en los papiros.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Papiro 1 -->
+    <div id="modal-papiro1" hidden>
+      <div class="modal" style="width:min(500px,90vw);">
+        <div class="modal-header">
+          <h2>📜 Papiro de Ra</h2>
+          <button class="modal-close" onclick="closeModal('modal-papiro1')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="papiro-content">
+            <p class="papiro-text"></p>
+            <div class="papiro-hint" hidden></div>
+            <div class="papiro-glyphs" hidden style="margin-top:0.8rem;"></div>
           </div>
-          <div class="puzzle-slot" id="puzzle-slot-3" onclick="clickPuzzleSlot(3)">
-            <span style="font-size:0.75rem;text-align:center;">Pieza 3</span>
+          <div style="display:flex;gap:0.6rem;justify-content:center;margin-top:0.6rem;flex-wrap:wrap;">
+            <button class="btn" onclick="openDictionary()">📖 Ver Diccionario</button>
           </div>
         </div>
-
-        <div class="puzzle-complete-btn">
-          <button id="btn-complete-puzzle" class="btn btn-primary" disabled>
-            🚪 Completar Puzzle y Escapar
-          </button>
-        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Settings -->
-  <div id="modal-settings" hidden>
-    <div class="modal" style="width:min(400px,90vw);">
-      <div class="modal-header">
-        <h2>⚙ Ajustes</h2>
-        <button class="modal-close" onclick="closeModal('modal-settings')">✕</button>
-      </div>
-      <div class="modal-body" style="text-align:center;">
-        <div style="margin-bottom: 2rem;">
-          <label for="music-volume" style="display:block; margin-bottom: 0.8rem; color:var(--gold-light); font-family:'Cinzel',serif; font-size:1.1rem; letter-spacing:0.1em;">Volumen de Música</label>
-          <div style="display:flex; align-items:center; gap: 0.8rem; justify-content:center;">
-            <span style="font-size:1.2rem;">🔈</span>
-            <input type="range" id="music-volume" min="0" max="1" step="0.05" value="0.5" class="custom-slider" />
-            <span style="font-size:1.2rem;">🔊</span>
+    <!-- Papiro 2 -->
+    <div id="modal-papiro2" hidden>
+      <div class="modal" style="width:min(500px,90vw);">
+        <div class="modal-header">
+          <h2>📜 Papiro de Osiris</h2>
+          <button class="modal-close" onclick="closeModal('modal-papiro2')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="papiro-content">
+            <p class="papiro-text"></p>
+            <div class="papiro-hint" hidden></div>
+            <div class="papiro-glyphs" hidden style="margin-top:0.8rem;"></div>
+          </div>
+          <p style="font-size:0.8rem;color:var(--muted);text-align:center;margin:0.6rem 0;">
+            Introduce los jeroglíficos mostrados en el papiro, en el mismo orden.
+          </p>
+          <div style="display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap;">
+            <button class="btn" onclick="openDictionary()">📖 Ver Diccionario</button>
           </div>
         </div>
+      </div>
+    </div>
 
-        <div style="margin-bottom: 2rem;">
-          <label for="sfx-volume" style="display:block; margin-bottom: 0.8rem; color:var(--gold-light); font-family:'Cinzel',serif; font-size:1.1rem; letter-spacing:0.1em;">Volumen de Efectos</label>
-          <div style="display:flex; align-items:center; gap: 0.8rem; justify-content:center;">
-            <span style="font-size:1.2rem;">🔈</span>
-            <input type="range" id="sfx-volume" min="0" max="1" step="0.05" value="0.5" class="custom-slider" />
-            <span style="font-size:1.2rem;">🔊</span>
+    <!-- Hieroglyph Input Panel -->
+    <div id="modal-hiero" hidden>
+      <div class="modal" style="width:min(480px,92vw);">
+        <div class="modal-header">
+          <h2 id="hiero-modal-title">🧩 Introducir Combinación</h2>
+          <button class="modal-close" onclick="closeModal('modal-hiero')">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:0.82rem;color:var(--muted);text-align:center;margin-bottom:0.8rem;">
+            Selecciona 3 jeroglíficos en el orden correcto según el papiro y el diccionario.
+          </p>
+
+          <!-- Selected slots -->
+          <div class="hiero-selected">
+            <div class="hiero-slot" id="hiero-slot-0"></div>
+            <div class="hiero-slot" id="hiero-slot-1"></div>
+            <div class="hiero-slot" id="hiero-slot-2"></div>
+          </div>
+
+          <!-- Hieroglyph buttons grid -->
+          <div class="hiero-grid" id="hiero-grid"></div>
+
+          <!-- Actions -->
+          <div class="hiero-actions">
+            <button id="btn-hiero-clear" class="btn btn-danger btn-sm">🗑 Borrar</button>
+            <button id="btn-hiero-submit" class="btn btn-success">✅ Confirmar</button>
           </div>
         </div>
-        <button id="btn-music-toggle" class="btn btn-primary" style="width:100%; font-size:1.1rem;">⏸ Pausar Música</button>
       </div>
     </div>
-  </div>
 
-  <!-- Modal Balanza -->
-  <div id="modal-anubis" hidden>
-    <div class="modal" style="width:min(500px,90vw);">
-      <div class="modal-header">
-        <h2>⚖ Balanza de Anubis</h2>
-        <button class="modal-close" onclick="closeModal('modal-anubis')">✕</button>
-      </div>
-      <div class="modal-body">
-        <p style="margin-bottom:1rem;color:var(--muted);font-size:0.9rem;text-align:center;">
-          Anubis exige el equilibrio perfecto.<br>
-          Coloca de izquierda a derecha:<br>
-          La verdad ligera (Pluma), el motor de la vida (Corazón) y lo superfluo (Oro).
-        </p>
-        <div class="anubis-scale">
-           <div class="scale-slot" id="anubis-slot-1" onclick="clickAnubisSlot(1)"></div>
-           <div class="scale-slot" id="anubis-slot-2" onclick="clickAnubisSlot(2)"></div>
-           <div class="scale-slot" id="anubis-slot-3" onclick="clickAnubisSlot(3)"></div>
+    <!-- Puzzle Final -->
+    <div id="modal-puzzle" hidden>
+      <div class="modal" style="width:min(460px,92vw);">
+        <div class="modal-header">
+          <h2>🗿 Puzzle Final — El Altar de Kha-Ra</h2>
+          <button class="modal-close" onclick="closeModal('modal-puzzle')">✕</button>
         </div>
-        <div class="anubis-inventory" id="anubis-inventory" style="margin-top:1.5rem; background:rgba(255,255,255,0.05);"></div>
-        <div style="margin-top:1.5rem; text-align:center;">
-          <button class="btn btn-primary" id="btn-submit-anubis">Pesar Ofrendas</button>
-          <button class="btn btn-secondary" onclick="resetAnubis()">Limpiar Balanza</button>
-        </div>
-      </div>
-    </div>
-  </div>
+        <div class="modal-body">
+          <p class="puzzle-instructions">
+            Coloca las 3 piezas sagradas en el altar para abrir la puerta de la pirámide.<br>
+            <span style="font-size:0.8rem;color:var(--muted);">Haz clic en cada casilla para colocar la pieza.</span>
+          </p>
 
-  <!-- Modal Diary (Notas) -->
-  <div id="modal-diary" hidden>
-    <div class="modal" style="width:min(500px,90vw);">
-      <div class="modal-header">
-        <h2>📓 Diario de Howard Carter, 1923</h2>
-        <button class="modal-close" onclick="closeModal('modal-diary')">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="diary-paper">
-          <p id="diary-text" style="font-family: 'Courier New', monospace; color: #332b21; font-weight:bold; line-height: 1.6;"></p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Mapa -->
-  <div id="modal-map" hidden>
-    <div class="modal" style="width:min(500px,90vw);">
-      <div class="modal-header">
-        <h2>🗺 Plano de la Pirámide</h2>
-        <button class="modal-close" onclick="closeModal('modal-map')">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="map-container pyramid-layout">
-           <!-- Base -->
-           <div class="map-node" id="map-node-1" style="bottom: 10%; left: 50%; transform: translateX(-50%);">1. Entrada</div>
-           
-           <!-- Mid-Lower -->
-           <div class="map-node" id="map-node-2" style="bottom: 30%; left: 30%;">2. Pasillo</div>
-           <div class="map-node" id="map-node-3" style="bottom: 30%; left: 70%;">3. Archivo</div>
-           
-           <!-- Mid-Upper -->
-           <div class="map-node" id="map-node-4" style="bottom: 55%; left: 35%;">4. Santuario</div>
-           <div class="map-node" id="map-node-5" style="bottom: 55%; left: 65%;">5. Ofrendas</div>
-           
-           <!-- Sub-Apex -->
-           <div class="map-node" id="map-node-6" style="bottom: 75%; left: 50%; transform: translateX(-50%);">6. Armería</div>
-           
-           <!-- Apex -->
-           <div class="map-node" id="map-node-7" style="bottom: 92%; left: 50%; transform: translateX(-50%);">7. Tumba</div>
-
-           <svg class="map-svg-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
-             <!-- Connections will be stylized in CSS -->
-             <path d="M50,90 L30,70 L35,45 L50,25 L65,45 L70,70 Z" fill="none" stroke="var(--gold)" stroke-width="0.5" opacity="0.3" />
-           </svg>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Minigame Lock -->
-  <div id="modal-minigame-lock" hidden>
-    <div class="modal" style="width:min(400px,90vw);">
-      <div class="modal-header">
-        <h2>🔒 Cofre Sellado</h2>
-        <button class="modal-close" onclick="closeModal('modal-minigame-lock')">✕</button>
-      </div>
-      <div class="modal-body" style="text-align:center;">
-        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;">
-          Gira los anillos cilíndricos para alinear la combinación correcta. <br>Una pista: "La proporción divina circular".
-        </p>
-        <div style="display:flex; gap:1rem; justify-content:center; margin-bottom:1.5rem;">
-          <div class="cylinder-col">
-            <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(0, 1)">▲</button>
-            <div class="cylinder-val" id="cyl-val-0" style="font-size:2rem;font-family:'Cinzel',serif;color:var(--gold);margin:0.5rem 0;">0</div>
-            <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(0, -1)">▼</button>
+          <div class="puzzle-board">
+            <div class="puzzle-slot" id="puzzle-slot-1" onclick="clickPuzzleSlot(1)">
+              <span style="font-size:0.75rem;text-align:center;">Pieza 1</span>
+            </div>
+            <div class="puzzle-slot" id="puzzle-slot-2" onclick="clickPuzzleSlot(2)">
+              <span style="font-size:0.75rem;text-align:center;">Pieza 2</span>
+            </div>
+            <div class="puzzle-slot" id="puzzle-slot-3" onclick="clickPuzzleSlot(3)">
+              <span style="font-size:0.75rem;text-align:center;">Pieza 3</span>
+            </div>
           </div>
-          <div class="cylinder-col">
-            <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(1, 1)">▲</button>
-            <div class="cylinder-val" id="cyl-val-1" style="font-size:2rem;font-family:'Cinzel',serif;color:var(--gold);margin:0.5rem 0;">0</div>
-            <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(1, -1)">▼</button>
-          </div>
-          <div class="cylinder-col">
-            <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(2, 1)">▲</button>
-            <div class="cylinder-val" id="cyl-val-2" style="font-size:2rem;font-family:'Cinzel',serif;color:var(--gold);margin:0.5rem 0;">0</div>
-            <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(2, -1)">▼</button>
+
+          <div class="puzzle-complete-btn">
+            <button id="btn-complete-puzzle" class="btn btn-primary" disabled>
+              🚪 Completar Puzzle y Escapar
+            </button>
           </div>
         </div>
-        <button class="btn btn-primary" onclick="submitLock()">Alinear Cilindros</button>
       </div>
     </div>
-  </div>
 
-  <!-- Modal Inspect Item -->
-  <div id="modal-inspect" hidden>
-    <div class="modal" style="width:min(400px,90vw);">
-      <div class="modal-header">
-        <h2 id="inspect-title">🔍 Inspeccionar Objeto</h2>
-        <button class="modal-close" onclick="closeModal('modal-inspect')">✕</button>
-      </div>
-      <div class="modal-body" style="text-align:center;">
-        <div id="inspect-icon" style="font-size:5rem; margin:1rem 0;">🧰</div>
-        <p id="inspect-desc" style="font-size:1rem; color:var(--sand); white-space:pre-wrap;"></p>
+    <!-- Settings -->
+    <div id="modal-settings" hidden>
+      <div class="modal" style="width:min(400px,90vw);">
+        <div class="modal-header">
+          <h2>⚙ Ajustes</h2>
+          <button class="modal-close" onclick="closeModal('modal-settings')">✕</button>
+        </div>
+        <div class="modal-body" style="text-align:center;">
+          <div style="margin-bottom: 2rem;">
+            <label for="music-volume"
+              style="display:block; margin-bottom: 0.8rem; color:var(--gold-light); font-family:'Cinzel',serif; font-size:1.1rem; letter-spacing:0.1em;">Volumen
+              de Música</label>
+            <div style="display:flex; align-items:center; gap: 0.8rem; justify-content:center;">
+              <span style="font-size:1.2rem;">🔈</span>
+              <input type="range" id="music-volume" min="0" max="1" step="0.05" value="0.5" class="custom-slider" />
+              <span style="font-size:1.2rem;">🔊</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 2rem;">
+            <label for="sfx-volume"
+              style="display:block; margin-bottom: 0.8rem; color:var(--gold-light); font-family:'Cinzel',serif; font-size:1.1rem; letter-spacing:0.1em;">Volumen
+              de Efectos</label>
+            <div style="display:flex; align-items:center; gap: 0.8rem; justify-content:center;">
+              <span style="font-size:1.2rem;">🔈</span>
+              <input type="range" id="sfx-volume" min="0" max="1" step="0.05" value="0.5" class="custom-slider" />
+              <span style="font-size:1.2rem;">🔊</span>
+            </div>
+          </div>
+          <button id="btn-music-toggle" class="btn btn-primary" style="width:100%; font-size:1.1rem;">⏸ Pausar
+            Música</button>
+        </div>
       </div>
     </div>
-  </div>
 
-</div><!-- /modal-overlay -->
+    <!-- Modal Balanza -->
+    <div id="modal-anubis" hidden>
+      <div class="modal" style="width:min(500px,90vw);">
+        <div class="modal-header">
+          <h2>⚖ Balanza de Anubis</h2>
+          <button class="modal-close" onclick="closeModal('modal-anubis')">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="margin-bottom:1rem;color:var(--muted);font-size:0.9rem;text-align:center;">
+            Anubis exige el equilibrio perfecto.<br>
+            Coloca de izquierda a derecha:<br>
+            La verdad ligera (Pluma), el motor de la vida (Corazón) y lo superfluo (Oro).
+          </p>
+          <div class="anubis-scale">
+            <div class="scale-slot" id="anubis-slot-1" onclick="clickAnubisSlot(1)"></div>
+            <div class="scale-slot" id="anubis-slot-2" onclick="clickAnubisSlot(2)"></div>
+            <div class="scale-slot" id="anubis-slot-3" onclick="clickAnubisSlot(3)"></div>
+          </div>
+          <div class="anubis-inventory" id="anubis-inventory"
+            style="margin-top:1.5rem; background:rgba(255,255,255,0.05);"></div>
+          <div style="margin-top:1.5rem; text-align:center;">
+            <button class="btn btn-primary" id="btn-submit-anubis">Pesar Ofrendas</button>
+            <button class="btn btn-secondary" onclick="resetAnubis()">Limpiar Balanza</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<!-- ── Toast container ──────────────────────── -->
-<div id="toast-container" class="toast-container"></div>
+    <!-- Modal Diary (Notas) -->
+    <div id="modal-diary" hidden>
+      <div class="modal" style="width:min(500px,90vw);">
+        <div class="modal-header">
+          <h2>📓 Diario de Howard Carter, 1923</h2>
+          <button class="modal-close" onclick="closeModal('modal-diary')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="diary-paper">
+            <p id="diary-text"
+              style="font-family: 'Courier New', monospace; color: #332b21; font-weight:bold; line-height: 1.6;"></p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<!-- ── Audio element ──────────────────────── -->
-<audio id="bg-music" src="/static/audio/Musica_egipto.mp3" loop></audio>
+    <!-- Modal Mapa -->
+    <div id="modal-map" hidden>
+      <div class="modal" style="width:min(500px,90vw);">
+        <div class="modal-header">
+          <h2>🗺 Plano de la Pirámide</h2>
+          <button class="modal-close" onclick="closeModal('modal-map')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="map-container pyramid-layout">
+            <!-- Base -->
+            <div class="map-node" id="map-node-1" style="bottom: 10%; left: 50%; transform: translateX(-50%);">1.
+              Entrada</div>
 
-<script src="/static/js/game.js"></script>
-<script>
-  // Populate hieroglyph reference list in dictionary modal once game starts
-  document.addEventListener('gameStateReady', () => {});
-  // Additional: render glyph list in dictionary when opened
-  (function() {
-    const origOpen = window.openDictionary;
-    window.openDictionary = function() {
-      if (!gameState) return;
-      const list = document.getElementById('dic-glyph-list');
-      if (list && list.children.length === 0) {
-        gameState.hieroglyphs.forEach((g, i) => {
-          list.innerHTML +=
-            `<div style="text-align:center;border:1px solid var(--stone-light);border-radius:6px;padding:0.4rem;background:var(--stone);">
+            <!-- Mid-Lower -->
+            <div class="map-node" id="map-node-2" style="bottom: 30%; left: 30%;">2. Pasillo</div>
+            <div class="map-node" id="map-node-3" style="bottom: 30%; left: 70%;">3. Archivo</div>
+
+            <!-- Mid-Upper -->
+            <div class="map-node" id="map-node-4" style="bottom: 55%; left: 35%;">4. Santuario</div>
+            <div class="map-node" id="map-node-5" style="bottom: 55%; left: 65%;">5. Ofrendas</div>
+
+            <!-- Sub-Apex -->
+            <div class="map-node" id="map-node-6" style="bottom: 75%; left: 50%; transform: translateX(-50%);">6.
+              Armería</div>
+
+            <!-- Apex -->
+            <div class="map-node" id="map-node-7" style="bottom: 92%; left: 50%; transform: translateX(-50%);">7. Tumba
+            </div>
+
+            <svg class="map-svg-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <!-- Connections will be stylized in CSS -->
+              <path d="M50,90 L30,70 L35,45 L50,25 L65,45 L70,70 Z" fill="none" stroke="var(--gold)" stroke-width="0.5"
+                opacity="0.3" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Minigame Lock -->
+    <div id="modal-minigame-lock" hidden>
+      <div class="modal" style="width:min(400px,90vw);">
+        <div class="modal-header">
+          <h2>🔒 Cofre Sellado</h2>
+          <button class="modal-close" onclick="closeModal('modal-minigame-lock')">✕</button>
+        </div>
+        <div class="modal-body" style="text-align:center;">
+          <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;">
+            Gira los anillos cilíndricos para alinear la combinación correcta. <br>Una pista: "La proporción divina
+            circular".
+          </p>
+          <div style="display:flex; gap:1rem; justify-content:center; margin-bottom:1.5rem;">
+            <div class="cylinder-col">
+              <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(0, 1)">▲</button>
+              <div class="cylinder-val" id="cyl-val-0"
+                style="font-size:2rem;font-family:'Cinzel',serif;color:var(--gold);margin:0.5rem 0;">0</div>
+              <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(0, -1)">▼</button>
+            </div>
+            <div class="cylinder-col">
+              <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(1, 1)">▲</button>
+              <div class="cylinder-val" id="cyl-val-1"
+                style="font-size:2rem;font-family:'Cinzel',serif;color:var(--gold);margin:0.5rem 0;">0</div>
+              <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(1, -1)">▼</button>
+            </div>
+            <div class="cylinder-col">
+              <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(2, 1)">▲</button>
+              <div class="cylinder-val" id="cyl-val-2"
+                style="font-size:2rem;font-family:'Cinzel',serif;color:var(--gold);margin:0.5rem 0;">0</div>
+              <button class="btn btn-sm cylinder-btn" onclick="spinCylinder(2, -1)">▼</button>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="submitLock()">Alinear Cilindros</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Inspect Item -->
+    <div id="modal-inspect" hidden>
+      <div class="modal" style="width:min(400px,90vw);">
+        <div class="modal-header">
+          <h2 id="inspect-title">🔍 Inspeccionar Objeto</h2>
+          <button class="modal-close" onclick="closeModal('modal-inspect')">✕</button>
+        </div>
+        <div class="modal-body" style="text-align:center;">
+          <div id="inspect-icon" style="font-size:5rem; margin:1rem 0;">🧰</div>
+          <p id="inspect-desc" style="font-size:1rem; color:var(--sand); white-space:pre-wrap;"></p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /modal-overlay -->
+
+  <!-- ── Toast container ──────────────────────── -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- ── Audio element ──────────────────────── -->
+  <audio id="bg-music" src="/static/audio/Musica_egipto.mp3" loop></audio>
+
+  <script src="/static/js/game.js"></script>
+  <script>
+    // Populate hieroglyph reference list in dictionary modal once game starts
+    document.addEventListener('gameStateReady', () => { });
+    // Additional: render glyph list in dictionary when opened
+    (function () {
+      const origOpen = window.openDictionary;
+      window.openDictionary = function () {
+        if (!gameState) return;
+        const list = document.getElementById('dic-glyph-list');
+        if (list && list.children.length === 0) {
+          gameState.hieroglyphs.forEach((g, i) => {
+            list.innerHTML +=
+              `<div style="text-align:center;border:1px solid var(--stone-light);border-radius:6px;padding:0.4rem;background:var(--stone);">
                <span style="font-size:1.8rem;display:block;color:var(--gold-light);">${g}</span>
                <span style="font-family:'Cinzel',serif;font-size:0.62rem;color:var(--muted);">${gameState.hieroglyph_names[i]}</span>
              </div>`;
-        });
-      }
-      openModal('modal-dictionary');
-    };
-  })();
+          });
+        }
+        openModal('modal-dictionary');
+      };
+    })();
 
-  // Patch scene-object pointer-events
-  const observer = new MutationObserver(() => {
-    document.querySelectorAll('.scene-object').forEach(el => {
-      el.style.pointerEvents = 'auto';
+    // Patch scene-object pointer-events
+    const observer = new MutationObserver(() => {
+      document.querySelectorAll('.scene-object').forEach(el => {
+        el.style.pointerEvents = 'auto';
+      });
+      document.querySelectorAll('.scene-nav').forEach(el => {
+        el.style.pointerEvents = 'auto';
+      });
     });
-    document.querySelectorAll('.scene-nav').forEach(el => {
-      el.style.pointerEvents = 'auto';
-    });
-  });
-  observer.observe(document.getElementById('scene-objects'), { childList: true, subtree: true });
-  // Particle Generation for Main Menu
-  function createParticles() {
-    const container = document.getElementById('menu-particles');
-    if (!container) return;
-    const count = 30;
-    for (let i = 0; i < count; i++) {
-      const p = document.createElement('div');
-      p.className = 'particle';
-      
-      const size = Math.random() * 4 + 2;
-      const left = Math.random() * 100;
-      const delay = Math.random() * 10;
-      const duration = Math.random() * 10 + 15;
-      
-      p.style.width = `${size}px`;
-      p.style.height = `${size}px`;
-      p.style.left = `${left}%`;
-      p.style.animationDelay = `${delay}s`;
-      p.style.animationDuration = `${duration}s`;
-      
-      container.appendChild(p);
+    observer.observe(document.getElementById('scene-objects'), { childList: true, subtree: true });
+    // Particle Generation for Main Menu
+    function createParticles() {
+      const container = document.getElementById('menu-particles');
+      if (!container) return;
+      const count = 30;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+
+        const size = Math.random() * 4 + 2;
+        const left = Math.random() * 100;
+        const delay = Math.random() * 10;
+        const duration = Math.random() * 10 + 15;
+
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        p.style.left = `${left}%`;
+        p.style.animationDelay = `${delay}s`;
+        p.style.animationDuration = `${duration}s`;
+
+        container.appendChild(p);
+      }
     }
-  }
-  createParticles();
-</script>
+    createParticles();
+  </script>
 
 </body>
+
 </html>

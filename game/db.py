@@ -58,7 +58,8 @@ def init_db():
             secret_text           TEXT,
             has_secret_relic      INTEGER DEFAULT 0,
             has_palo              INTEGER DEFAULT 0,
-            has_vendas            INTEGER DEFAULT 0
+            has_vendas            INTEGER DEFAULT 0,
+            notes                 TEXT    DEFAULT '{}'
         )
     ''')
     
@@ -78,7 +79,8 @@ def init_db():
         "ALTER TABLE game_state ADD COLUMN secret_text TEXT",
         "ALTER TABLE game_state ADD COLUMN has_secret_relic INTEGER DEFAULT 0",
         "ALTER TABLE game_state ADD COLUMN has_palo INTEGER DEFAULT 0",
-        "ALTER TABLE game_state ADD COLUMN has_vendas INTEGER DEFAULT 0"
+        "ALTER TABLE game_state ADD COLUMN has_vendas INTEGER DEFAULT 0",
+        "ALTER TABLE game_state ADD COLUMN notes TEXT DEFAULT '{}'"
     ]
     for q in alters:
         try:
@@ -132,14 +134,14 @@ def get_active_game_for_user(user_id, time_now):
     return dict(row) if row else None
 
 
-def create_game(e1_code, e2_code, secret_text, p_dic, p_pap1, p_pap2, p_weight, user_id=None, difficulty='easy', total_time=900.0):
+def create_game(e1_code, e2_code, secret_text, p_dic, p_pap1, p_pap2, p_weight, notes, user_id=None, difficulty='easy', total_time=900.0):
     conn = get_db()
     c = conn.cursor()
     c.execute(
         '''INSERT INTO game_state 
-           (user_id, variant, start_time, pos_diccionario, pos_papiro1, pos_papiro2, pos_weights, difficulty, total_time, e1_code, e2_code, secret_text) 
-           VALUES (?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-        (user_id, t.time(), p_dic, p_pap1, p_pap2, p_weight, difficulty, total_time, json.dumps(e1_code), json.dumps(e2_code), secret_text)
+           (user_id, variant, start_time, pos_diccionario, pos_papiro1, pos_papiro2, pos_weights, difficulty, total_time, e1_code, e2_code, secret_text, notes) 
+           VALUES (?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+        (user_id, t.time(), p_dic, p_pap1, p_pap2, p_weight, difficulty, total_time, json.dumps(e1_code), json.dumps(e2_code), secret_text, notes)
     )
     game_id = c.lastrowid
     conn.commit()

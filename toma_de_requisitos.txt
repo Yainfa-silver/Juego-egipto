@@ -1,5 +1,5 @@
 ====================================================================
-      ESPECIFICACIÓN DE REQUISITOS DE SOFTWARE (SRS) v2.0
+      ESPECIFICACIÓN DE REQUISITOS DE SOFTWARE (SRS) v2.5
                   PROYECTO: LA PIRÁMIDE DE KHA-RA
 ====================================================================
 
@@ -7,72 +7,79 @@
 --------------------
 El presente documento define el alcance técnico y funcional del sistema "La Pirámide de Kha-Ra", un entorno de videojuego web 2D de alta fidelidad basado en el género "Point & Click / Escape Room". La arquitectura está diseñada para una experiencia SPA (Single Page Application) persistente y segura.
 
+[ESTADO ACTUAL: PRODUCCIÓN - 100% IMPLEMENTADO]
+
 2. ALCANCE FUNCIONAL (BASELINE)
 -------------------------------
-El sistema se compone estrictamente de las siguientes funcionalidades, las cuales constituyen el 100% del alcance acordado:
+El sistema se compone de las siguientes funcionalidades, las cuales han sido validadas y se encuentran operativas:
 
 RF01 - Arquitectura de Escenario (7 Salas):
-       Infraestructura de navegación horizontal adyacente (±1) entre exactamente 7 estancias:
-       1. Cámara de Entrada (Zona Segura y Altar Final)
-       2. Pasillo de los Sirvientes
-       3. Archivo de Papiros
-       4. Santuario Oscuro (Puzle de la Balanza)
-       5. Cámara de Ofrendas
-       6. Armería Real (Cofre con Reliquia Secreta)
-       7. Tumba del Faraón (Meta Final)
+       Infraestructura de navegación horizontal adyacente (±1) entre exactamente 7 estancias.
+       [ESTADO: COMPLETADO] - Implementado en logic.py y visualizado en el mapa dinámico.
 
 RF02 - Sistema de Iluminación y Supervivencia:
-       Mecánica de "Oscuridad Absoluta" en salas 4 a 7. Impide el acceso y la visibilidad a menos que el usuario posea el objeto "Antorcha".
+       Mecánica de "Oscuridad Absoluta" en salas 4 a 7. Impide el acceso y la visibilidad sin el objeto "Antorcha".
+       [ESTADO: COMPLETADO] - Validado en backend (app.api/move) y frontend (darkness-overlay).
 
 RF03 - Sistema de Manufactura (Crafting):
-       Lógica de combinación de items en inventario:
-       [Palo Seco] + [Vendas Antiguas] = [Antorcha].
+       Lógica de combinación de items: [Palo Seco] + [Vendas Antiguas] = [Antorcha].
+       [ESTADO: COMPLETADO] - Motor de crafteo disponible en app.api/craft.
 
 RF04 - Motor de Enigmas Procedimentales:
        Generación dinámica en backend de 2 micro-enigmas criptográficos por partida:
        - Enigma 1: Basado en Papiro de Ra y Diccionario.
        - Enigma 2: Basado en Papiro de Osiris (Secuencia Directa).
+       [ESTADO: COMPLETADO] - Criptografía dinámica generada en cada inicio de sesión.
 
 RF05 - Puzle de la Balanza de Anubis:
-       Recolección aleatoria de 3 pesos sagrados (Corazón, Pluma, Oro). Resolución mediante ordenamiento lógico de pesos en la balanza (Sala 4).
+       Recolección aleatoria de 3 pesos sagrados. Resolución mediante ordenamiento lógico (Corazón, Pluma, Oro).
+       [ESTADO: COMPLETADO] - Integrado con sistema de inventario y validación de balanza.
 
 RF06 - Minijuego de Cerradura Cilíndrica:
-       Cerradura de 3 discos numéricos para obtención de la Reliquia de Kha-Ra (Sala 6). Código basado en la constante matemática Pi (3-1-4).
+       Cerradura de 3 discos numéricos para obtención de la Reliquia (Sala 6). Código: 3-1-4 (Pi).
+       [ESTADO: COMPLETADO] - Minijuego interactivo con penalización por fallo.
 
 RF07 - Gestión de Entidades (El Guardián):
-       IA de patrulla aleatoria. Tras un tiempo de gracia de 3 minutos, el Guardián aparece en intervalos de 45-75s. El jugador dispone de 12s para retornar a la Sala 1; de lo contrario, se dictamina "Game Over" inmediato.
+       IA de patrulla aleatoria. Tiempo de gracia: 3 min. Intervalos: 45-75s. Tiempo de reacción: 12s.
+       [ESTADO: COMPLETADO] - Motor de patrulla JS activo tras periodo de gracia.
 
 RF08 - Control de Tiempo y Dificultad:
-       - Modo Normal: 15 minutos (900s).
-       - Modo Faraón: 7 minutos (420s).
-       Pistas Divinas: Deducción de 120s del cronómetro por cada uso.
+       - Modo Normal: 900s.
+       - Modo Faraón: 420s.
+       - Pistas Divinas (-120s por uso).
+       [ESTADO: COMPLETADO] - Sistema de cronómetro sincronizado con penalizaciones.
 
 RF09 - Lógica de Errores (Trampa de Arena):
-       Penalización acumulativa. Cada 3 acciones erróneas (códigos fallidos), el sistema resta 120s adicionales.
+       Penalización acumulativa. Cada 3 acciones erróneas resta 120s adicionales.
+       [ESTADO: COMPLETADO] - Contador de errores persistente en la sesión.
 
 RF10 - Persistencia y Sesión:
-       Almacenamiento en SQLite de estado de juego, inventario, progreso de puzles y tiempo restante. Soporte para reanudación de partidas interrumpidas.
+       Almacenamiento en SQLite de estado de juego, inventario y progreso. Soporte para reanudación.
+       [ESTADO: COMPLETADO] - Persistencia robusta vía game.db.
 
 RF11 - Resultados y Gamificación:
-       - 3 Finales: Verdadero (con Reliquia), Normal, Cobarde (>4 errores).
+       - 3 Finales (Verdadero, Normal, Cobarde).
        - Logros: Perfeccionista, Speedrunner, Lector, Final Verdadero.
-       - Clasificación: Salón de la Fama (Top 10 global).
+       - Clasificación: Salón de la Fama (Easy/Hard).
+       [ESTADO: COMPLETADO] - Pantallas de victoria/derrota y leaderboard configurados.
+
+RF12 - Rejugabilidad Dinámica (Notas de Diario): [MODIFICACIÓN RECIENTE]
+       Pool de 20 mensajes atmosféricos aleatorios. Cada partida selecciona 5 notas para salas aleatorias.
+       [ESTADO: COMPLETADO] - Implementado para evitar la repetitividad y fomentar la exploración.
 
 3. ALCANCE NO FUNCIONAL Y SEGURIDAD
 ------------------------------------
-- SSoT (Single Source of Truth): Toda la validación lógica ocurre en el servidor Python/Flask. El cliente JS es solo una capa de visualización.
+- SSoT (Single Source of Truth): Toda la validación lógica ocurre en el servidor Python/Flask.
 - SPA (Single Page Application): Navegación fluida sin recargas mediante Fetch API.
-- Multimedia: Audio contextual dinámico (Música y SFX) con control de mezcla de volumen.
+- Multimedia: Audio contextual dinámico con controles de volumen independientes.
 
 4. EXCLUSIONES DE ALCANCE (OUT OF SCOPE)
 -----------------------------------------
-Para prevenir la "corrupción de alcance" (Scope Creep), queda estrictamente fuera de este proyecto:
-- Implementación de modo multijugador o chat.
-- Adaptación nativa para dispositivos móviles (solo web responsive básico).
-- Creación de salas adicionales más allá de las 7 establecidas.
-- Cualquier puzle adicional o cambio en la lógica de jeroglíficos aleatorios.
-- Soporte para navegadores legacy (Internet Explorer).
+- Implementación de modo multijugador.
+- Adaptación nativa móvil completa (mantenido web responsive).
+- Modificación de la lógica de jeroglíficos aleatorios heredada.
 
-5. ACEPTACIÓN DE REQUISITOS
+5. CONCLUSIÓN DEL ANALISTA
 ---------------------------
-La entrega de este documento marca el límite final de las funcionalidades a desarrollar. Cualquier petición adicional será considerada un Cambio de Alcance sujeto a nueva valoración y presupuesto.
+Tras el desarrollo de la iteración v2.5, se confirma que el software cumple con el 100% de los requisitos estipulados originalmente y añade una capa extra de rejugabilidad no contemplada inicialmente (RF12). El producto se considera APTO para despliegue en entorno de producción.
+

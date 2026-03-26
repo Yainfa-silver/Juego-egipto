@@ -42,6 +42,7 @@ def _build_state(game):
     pos_pap1 = json.loads(game['pos_papiro1']) if game['pos_papiro1'] else None
     pos_pap2 = json.loads(game['pos_papiro2']) if game['pos_papiro2'] else None
     pos_weights = json.loads(game.get('pos_weights', '[]')) if game.get('pos_weights') else []
+    notes = json.loads(game.get('notes', '{}'))
     
     current = game['current_room']
     client_pos_dic = pos_dic if pos_dic and pos_dic['room'] == current else None
@@ -79,6 +80,7 @@ def _build_state(game):
         'has_secret_relic':      bool(game.get('has_secret_relic', 0)),
         'has_palo':              bool(game.get('has_palo', 0)),
         'has_vendas':            bool(game.get('has_vendas', 0)),
+        'notes':                 notes,
         
         'hieroglyphs':           HIEROGLYPHS,
         'hieroglyph_names':      HIEROGLYPH_NAMES,
@@ -162,8 +164,8 @@ def start_game():
     total_time = 420.0 if difficulty == 'hard' else 900.0
 
     e1, e2, secret = generate_random_codes()
-    p_dic, p_pap1, p_pap2, p_weight = random_positions()
-    game_id = create_game(e1, e2, secret, p_dic, p_pap1, p_pap2, p_weight, user_id=user_id, difficulty=difficulty, total_time=total_time)
+    p_dic, p_pap1, p_pap2, p_weight, notes_json = random_positions()
+    game_id = create_game(e1, e2, secret, p_dic, p_pap1, p_pap2, p_weight, notes_json, user_id=user_id, difficulty=difficulty, total_time=total_time)
     
     session['game_id'] = game_id
     game = get_game(game_id)
@@ -315,8 +317,10 @@ def unlock_secret():
             return jsonify({'error': 'Ya tienes la reliquia.'}), 400
     else:
         # Increase error count for wrong cylinder attempts
-        update_game(game_id, error_count=game.get('error_count',0)+1)
-        return jsonify({'error': 'La cerradura no cede. Combinación incorrecta.'}), 400
+        new_err = game.get('error_count', 0) + 1
+        update_game(game_id, error_count=new_err)
+        game = get_game(game_id)
+        return jsonify({'error': 'La cerradura no cede. Combinación incorrecta.', 'state': _build_state(game)}), 400
 
 @app.route('/api/read_note', methods=['POST'])
 def read_note():
@@ -383,7 +387,8 @@ def solve_anubis():
         # Increase error count
         errs = game.get('error_count', 0) + 1
         update_game(game_id, error_count=errs)
-        return jsonify({'success': False, 'message': '❌ La balanza rechaza tu ofrenda. Las almas pesan más que el oro, pero menos que la verdad.'})
+        game = get_game(game_id)
+        return jsonify({'success': False, 'message': '❌ La balanza rechaza tu ofrenda. Las almas pesan más que el oro, pero menos que la verdad.', 'state': _build_state(game)})
 
 
 @app.route('/api/solve', methods=['POST'])
@@ -421,7 +426,6 @@ def solve():
         else:
             updates['error_count'] = game.get('error_count', 0) + 1
             msg = '❌ Combinación incorrecta. Consulta bien el diccionario.'
-            return jsonify({'success': False, 'message': msg}), 200
 
     elif enigma == 2:
         if not game['has_papiro2'] or not game['has_dictionary']:
@@ -444,14 +448,14 @@ def solve():
         else:
             updates['error_count'] = game.get('error_count', 0) + 1
             msg = '❌ Combinación incorrecta. Observa bien el papiro.'
-            return jsonify({'success': False, 'message': msg}), 200
     else:
         return jsonify({'error': 'Enigma inválido'}), 400
 
     if updates:
         update_game(game_id, **updates)
+    
     game = get_game(game_id)
-    return jsonify({'success': True, 'message': msg, 'state': _build_state(game)})
+    return jsonify({'success': True if 'enigma1_solved' in updates or 'enigma2_solved' in updates else False, 'message': msg, 'state': _build_state(game)})
 
 
 @app.route('/api/hidden_button', methods=['POST'])

@@ -8,9 +8,9 @@
 let gameState = null;
 let timerInterval = null;
 let localTimeRemaining = 0;
-let selectedHiero = [];          
-let currentEnigma = 0;           
-let placedPieces = {};           
+let selectedHiero = [];
+let currentEnigma = 0;
+let placedPieces = {};
 
 let currentAnubisPlacements = [null, null, null];
 let lockCylinders = [0, 0, 0];
@@ -28,7 +28,7 @@ let sfxVolume = 0.5;
 function playSFX(type) {
   if (!audioCtx) audioCtx = new AudioContext();
   if (audioCtx.state === 'suspended') audioCtx.resume();
-  
+
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   osc.connect(gain);
@@ -108,7 +108,7 @@ async function login() {
   document.getElementById('screen-login').hidden = true;
   document.getElementById('screen-start').hidden = false;
   document.getElementById('welcome-message').textContent = `Bienvenido, Viajero ${data.username}`;
-  
+
   const achEl = document.getElementById('achievements-display');
   if (achEl) {
     if (data.achievements && data.achievements.length > 0) {
@@ -137,13 +137,13 @@ async function resumeGame() {
   playSFX('click');
   const data = await api('POST', '/api/resume');
   if (!data.success) { toast(data.error || 'Error al restaurar', 'error'); return; }
-  
+
   gameState = data.state;
   localTimeRemaining = gameState.time_remaining;
   placedPieces = {};
 
   document.getElementById('screen-start').hidden = true;
-  document.getElementById('screen-game').hidden  = false;
+  document.getElementById('screen-game').hidden = false;
 
   startTimer();
   renderAll();
@@ -163,8 +163,8 @@ async function startGame() {
 
   document.getElementById('screen-start').hidden = true;
   document.getElementById('screen-login').hidden = true;
-  document.getElementById('screen-game').hidden  = false;
-  document.getElementById('screen-victory').hidden  = true;
+  document.getElementById('screen-game').hidden = false;
+  document.getElementById('screen-victory').hidden = true;
   document.getElementById('screen-gameover').hidden = true;
 
   startTimer();
@@ -185,11 +185,29 @@ function showVictory() {
   clearInterval(timerInterval);
   stopGuardianSystem();
   closeAllModals();
-  document.getElementById('screen-game').hidden    = true;
+  document.getElementById('screen-game').hidden = true;
   document.getElementById('screen-gameover').hidden = true;
-  document.getElementById('screen-victory').hidden  = false;
+  document.getElementById('screen-victory').hidden = false;
   document.getElementById('secret-text-display').textContent =
     gameState.secret_text || '¡Has escapado de la pirámide!';
+
+  // Render earned achievements
+  const achEarned = document.getElementById('achievements-earned');
+  if (achEarned && gameState.message && gameState.message.includes('Logros ganados')) {
+    const parts = gameState.message.split('Logros ganados:');
+    if (parts.length > 1) {
+      const list = parts[1].replace('!', '').split(',').map(s => s.trim());
+      const map = {
+        'perfeccionista': '🏅 Perfeccionista',
+        'speedrunner': '🏅 Speedrunner',
+        'lector': '🏅 Lector',
+        'final_verdadero': '👑 Final Verdadero'
+      };
+      achEarned.innerHTML = list.map(a => `<span class="badge" style="background:var(--gold); color:#000; padding:0.4rem 0.8rem; border-radius:4px; font-weight:bold; font-size:0.9rem;">${map[a] || a}</span>`).join('');
+    }
+  } else if (achEarned) {
+    achEarned.innerHTML = '';
+  }
 }
 
 function showGameOver() {
@@ -197,8 +215,8 @@ function showGameOver() {
   clearInterval(timerInterval);
   stopGuardianSystem();
   closeAllModals();
-  document.getElementById('screen-game').hidden    = true;
-  document.getElementById('screen-victory').hidden  = true;
+  document.getElementById('screen-game').hidden = true;
+  document.getElementById('screen-victory').hidden = true;
   document.getElementById('screen-gameover').hidden = false;
 }
 
@@ -207,13 +225,19 @@ function restartGame() {
   clearInterval(timerInterval);
   stopGuardianSystem();
   gameState = null; selectedHiero = []; placedPieces = {};
-  document.getElementById('screen-victory').hidden  = true;
+  document.getElementById('screen-victory').hidden = true;
   document.getElementById('screen-gameover').hidden = true;
-  document.getElementById('screen-game').hidden     = true;
-  document.getElementById('screen-start').hidden    = true;
-  document.getElementById('screen-login').hidden    = false;
-  document.getElementById('login-username').value   = '';
+  document.getElementById('screen-game').hidden = true;
+  document.getElementById('screen-start').hidden = true;
+  document.getElementById('screen-login').hidden = false;
+  document.getElementById('login-username').value = '';
   fetchLeaderboard(); // refresh leaderboard
+}
+function goBackToLogin() {
+  playSFX('click');
+  document.getElementById('screen-start').hidden = true;
+  document.getElementById('screen-login').hidden = false;
+  document.getElementById('login-username').value = '';
 }
 
 // ─── Timer ───────────────────────────────────────────────────
@@ -231,12 +255,12 @@ function startTimer() {
 }
 
 function renderTimer() {
-  const el  = document.getElementById('timer');
-  const m   = Math.floor(localTimeRemaining / 60);
-  const s   = Math.floor(localTimeRemaining % 60);
-  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const el = document.getElementById('timer');
+  const m = Math.floor(localTimeRemaining / 60);
+  const s = Math.floor(localTimeRemaining % 60);
+  el.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   el.className = localTimeRemaining <= 30 ? 'danger'
-               : localTimeRemaining <= 60 ? 'warning' : '';
+    : localTimeRemaining <= 60 ? 'warning' : '';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -253,6 +277,16 @@ async function moveToRoom(room) {
     clearTimeout(guardianTimeout);
     toast('Estás a salvo... el Guardián ha pasado de largo.', 'success');
   }
+  
+  // Room 7 Secret Atmospheric logic
+  if (room === 7 && gameState.has_secret_relic) {
+    setTimeout(() => {
+      document.body.classList.add('shake-screen');
+      setTimeout(() => document.body.classList.remove('shake-screen'), 1200);
+      toast('✨ La Reliquia de Kha-Ra vibra intensamente en este lugar... Sientes el peso de la historia.', 'success');
+    }, 800);
+  }
+
   renderAll();
 }
 
@@ -261,7 +295,7 @@ async function pickupItem(item, opts = null) {
   const endpoint = item === 'weight' ? '/api/pickup_weight' : '/api/pickup';
   const body = item === 'weight' ? { weight_id: opts } : { item };
   const data = await api('POST', endpoint, body);
-  
+
   if (data.error) { toast(data.error, 'error'); return; }
   gameState = data.state;
   toast(data.message, 'success');
@@ -272,14 +306,9 @@ async function readNote(room) {
   playSFX('click');
   const data = await api('POST', '/api/read_note', { room });
   if (data.success) { gameState = data.state; renderAll(); }
-  const msgs = {
-    1: "La puerta se selló a mi espalda. No veo cómo volver. El aire está pesado.",
-    2: "Los dioses dejaron pergaminos. Alguien los partió intentando descifrarlos... o algo peor.",
-    3: "He encontrado las salas profundas. La estatua de Anubis aguarda. Exige pesado tributo.",
-    4: "¡Es inútil! La verdad es ligera como una pluma, el motor humano es carne, pero el materialismo ciega más.",
-    5: "La tumba real. Rebosa riqueza, pero no me servirá de nada si perezco en la oscuridad eternamente.",
-  };
-  document.getElementById('diary-text').textContent = msgs[room];
+
+  const msg = gameState.notes[room] || "El diario está borroso o las páginas han sido arrancadas.";
+  document.getElementById('diary-text').textContent = msg;
   openModal('modal-diary');
 }
 
@@ -290,7 +319,7 @@ async function triggerHint() {
   // Overwrite state: new time deduction
   gameState = data.state;
   localTimeRemaining = gameState.time_remaining;
-  
+
   toast(data.message, 'warning');
   playSFX('success');
   renderAll();
@@ -340,11 +369,12 @@ async function submitHiero() {
     renderAll();
   } else {
     playSFX('stone');
-    gameState = data.state; // update errors
+    if (data.state) gameState = data.state;
     toast(data.message, 'error');
-    if (gameState.error_count > 0 && gameState.error_count % 3 === 0) {
+    if (gameState && gameState.error_count > 0 && gameState.error_count % 3 === 0) {
       triggerSandTrap();
     }
+    renderAll();
   }
 }
 
@@ -368,11 +398,11 @@ function renderHieroPanel() {
 
 function renderHieroSlots() {
   const hieroGlyphs = gameState ? gameState.hieroglyphs : [];
-  [0,1,2].forEach(i => {
+  [0, 1, 2].forEach(i => {
     const slot = document.getElementById(`hiero-slot-${i}`);
     if (!slot) return;
     if (selectedHiero[i] !== undefined) {
-      slot.textContent  = hieroGlyphs[selectedHiero[i]] || '?';
+      slot.textContent = hieroGlyphs[selectedHiero[i]] || '?';
       slot.classList.add('filled');
     } else {
       slot.textContent = '';
@@ -395,10 +425,10 @@ function openPapiro(which) {
   if (which === 2 && !gameState.has_papiro2) return;
 
   const hasDic = gameState.has_dictionary;
-  const modal  = document.getElementById(`modal-papiro${which}`);
+  const modal = document.getElementById(`modal-papiro${which}`);
   const contentEl = modal.querySelector('.papiro-content');
-  const hintEl    = modal.querySelector('.papiro-hint');
-  const glyphsEl  = modal.querySelector('.papiro-glyphs');
+  const hintEl = modal.querySelector('.papiro-hint');
+  const glyphsEl = modal.querySelector('.papiro-glyphs');
 
   if (which === 1) {
     contentEl.querySelector('.papiro-text').innerHTML =
@@ -442,17 +472,24 @@ function renderAnubisModal() {
   const coll = gameState.weights_collected || [];
   [1, 2, 3].forEach(idx => {
     const s = document.getElementById(`anubis-slot-${idx}`);
-    s.textContent = currentAnubisPlacements[idx-1] ? getWeightIcon(currentAnubisPlacements[idx-1]) : '';
+    if (!s) return;
+    const val = currentAnubisPlacements[idx - 1];
+    s.textContent = val ? getWeightIcon(Number(val)) : '';
   });
-  
+
   const inv = document.getElementById('anubis-inventory');
+  if (!inv) return;
   inv.innerHTML = '';
   coll.forEach(w => {
-    if (!currentAnubisPlacements.includes(w)) {
+    // Convert to Number to ensure consistent comparison with placements
+    const wId = Number(w);
+    const alreadyPlaced = currentAnubisPlacements.some(p => p !== null && Number(p) === wId);
+
+    if (!alreadyPlaced) {
       const d = document.createElement('div');
       d.className = 'weight-item';
-      d.textContent = getWeightIcon(w);
-      d.onclick = () => placeAnubisWeight(w);
+      d.textContent = getWeightIcon(wId);
+      d.onclick = () => placeAnubisWeight(wId);
       inv.appendChild(d);
     }
   });
@@ -468,8 +505,8 @@ function placeAnubisWeight(w) {
 }
 
 function clickAnubisSlot(pos) {
-  if (currentAnubisPlacements[pos-1] !== null) {
-    currentAnubisPlacements[pos-1] = null;
+  if (currentAnubisPlacements[pos - 1] !== null) {
+    currentAnubisPlacements[pos - 1] = null;
     playSFX('click');
     renderAnubisModal();
   }
@@ -496,8 +533,9 @@ async function submitAnubis() {
     renderAll();
   } else {
     playSFX('stone');
-    gameState = data.state; // Refresh errors state
+    if (data.state) gameState = data.state;
     toast(data.message, 'error');
+    renderAnubisModal(); // Refresh UI to allow retries
   }
 }
 
@@ -529,7 +567,7 @@ function openPuzzle() {
 }
 
 function renderPuzzleBoard() {
-  [1,2,3].forEach(p => {
+  [1, 2, 3].forEach(p => {
     const slot = document.getElementById(`puzzle-slot-${p}`);
     if (!slot) return;
     const hasPiece = gameState.puzzle_pieces.includes(p);
@@ -545,7 +583,7 @@ function renderPuzzleBoard() {
       slot.innerHTML = '?';
     }
   });
-  const allPlaced = [1,2,3].every(p => placedPieces[p]);
+  const allPlaced = [1, 2, 3].every(p => placedPieces[p]);
   document.getElementById('btn-complete-puzzle').disabled = !allPlaced;
 }
 
@@ -583,7 +621,7 @@ function renderAll() {
 }
 
 function updateMap() {
-  [1,2,3,4,5,6,7].forEach(r => {
+  [1, 2, 3, 4, 5, 6, 7].forEach(r => {
     const node = document.getElementById(`map-node-${r}`);
     if (node) node.classList.toggle('active-room', gameState.current_room === r);
   });
@@ -597,7 +635,7 @@ function renderHeaderRoom() {
 // ─── Room scene ────────────────────────────────────────────────
 function renderRoom() {
   const overlay = document.getElementById('darkness-overlay');
-  
+
   if ((gameState.current_room >= 4) && !gameState.has_torch) {
     overlay.hidden = false;
   } else {
@@ -619,7 +657,8 @@ function renderRoom() {
   if (gameState.current_room === 7) renderRoom7Objects(objContainer);
 
   const notesRead = gameState.notes_read || [];
-  if (!notesRead.includes(gameState.current_room)) {
+  const sessionNotes = gameState.notes || {};
+  if (!notesRead.includes(gameState.current_room) && sessionNotes[gameState.current_room]) {
     const note = makeObject('📝', 'Diario Suelto', '75%', '5%', () => readNote(gameState.current_room));
     objContainer.appendChild(note);
   }
@@ -636,7 +675,7 @@ function renderRoom() {
     const pap2 = makeObject('📜', 'Papiro de Osiris', gameState.pos_papiro2.x, gameState.pos_papiro2.y, () => pickupItem('papiro2'));
     objContainer.appendChild(pap2);
   }
-  
+
   // Render Weights
   const collectedW = gameState.weights_collected || [];
   const localWeights = gameState.pos_weights || [];
@@ -670,13 +709,13 @@ function renderRoom1Objects(container) {
   nav.addEventListener('click', () => moveToRoom(2));
   container.appendChild(nav);
 
-  const has3 = [1,2,3].every(p => gameState.puzzle_pieces.includes(p));
+  const has3 = [1, 2, 3].every(p => gameState.puzzle_pieces.includes(p));
   if (has3 && !gameState.puzzle_completed) {
     const puz = makeObject('🗿', 'Altar del Puzzle', '50%', '20%', openPuzzle);
     puz.style.left = '45%';
     container.appendChild(puz);
   }
-  
+
   if (gameState.enigma1_solved) addRoomMessage(container, '✅ Enigma 1 resuelto', '#27ae60', '2rem');
   if (gameState.enigma2_solved) addRoomMessage(container, '✅ Enigma 2 resuelto', '#27ae60', '4rem');
   if (gameState.anubis_solved) addRoomMessage(container, '✅ Balanza resuelta', '#27ae60', '6rem');
@@ -731,7 +770,7 @@ function renderRoom4Objects(container) {
   navRight.className = 'scene-nav right'; navRight.innerHTML = '›'; navRight.title = 'Ir a Sala 5';
   navRight.addEventListener('click', () => moveToRoom(5));
   container.appendChild(navRight);
-  
+
   if (!gameState.anubis_solved) {
     const solveBtn = makeObject('⚖️', 'Balanza de Anubis', '50%', '30%', () => openAnubis());
     container.appendChild(solveBtn);
@@ -793,7 +832,7 @@ function renderSidebar() {
 }
 
 function renderButtonStatus() {
-  [1,2,3].forEach(i => {
+  [1, 2, 3].forEach(i => {
     const el = document.getElementById(`btn-ind-${i}`);
     if (!el) return;
     el.classList.toggle('active', gameState.buttons_activated.includes(i));
@@ -812,7 +851,7 @@ function renderInventory() {
   if (gameState.has_palo) items.push({ id: 'palo', icon: '🪵', label: 'Palo Seco', action: () => clickCraftItem('palo') });
   if (gameState.has_vendas) items.push({ id: 'vendas', icon: '🩹', label: 'Vendas', action: () => clickCraftItem('vendas') });
   if (gameState.has_secret_relic) items.push({ icon: '🏺', label: 'Reliquia', action: () => inspectItem('🏺', 'Reliquia de Kha-Ra\n\nDesprende un aura oscura y milenaria. Has demostrado gran valía al encontrar el Secreto de la Vida.') });
-  
+
   const collWeights = gameState.weights_collected || [];
   collWeights.forEach(w => items.push({ icon: getWeightIcon(w), label: getWeightName(w), action: null }));
 
@@ -820,7 +859,7 @@ function renderInventory() {
   if (gameState.puzzle_pieces.includes(2)) items.push({ icon: '<span class="piece-icon">𓄿</span>', label: 'Pieza 2', raw: true });
   if (gameState.puzzle_pieces.includes(3)) items.push({ icon: '<span class="piece-icon">𓅱</span>', label: 'Pieza 3', raw: true });
 
-  if ([1,2,3].every(p => gameState.puzzle_pieces.includes(p)) && !gameState.puzzle_completed) {
+  if ([1, 2, 3].every(p => gameState.puzzle_pieces.includes(p)) && !gameState.puzzle_completed) {
     items.push({ icon: '🗿', label: 'Puzzle Final', action: openPuzzle });
   }
 
@@ -829,7 +868,7 @@ function renderInventory() {
     div.className = 'inv-item';
     if (item.action) div.style.cursor = 'pointer';
     if (item.id && item.id === selectedCraftItem) div.style.boxShadow = '0 0 10px 2px var(--gold)'; // inline highlight
-    
+
     if (item.raw) {
       div.innerHTML = `<span class="inv-icon">${item.icon}</span><span class="inv-label">${item.label}</span>`;
     } else {
@@ -841,7 +880,7 @@ function renderInventory() {
 }
 
 function renderNavButtons() {
-  [1,2,3,4,5,6,7].forEach(i => {
+  [1, 2, 3, 4, 5, 6, 7].forEach(i => {
     const btn = document.getElementById(`nav-btn-${i}`);
     if (!btn) return;
     btn.classList.toggle('current', gameState.current_room === i);
@@ -880,7 +919,7 @@ function startGuardianSystem() {
   clearInterval(guardianInterval);
   clearTimeout(guardianStartTimeout);
   guardianActive = false;
-  
+
   // Wait 3 minutes (180,000 ms) before starting the random patrol interval
   guardianStartTimeout = setTimeout(() => {
     guardianInterval = setInterval(() => {
@@ -907,9 +946,9 @@ function triggerGuardian() {
   guardianActive = true;
   guardianTimeout = setTimeout(() => {
     if (guardianActive && gameState && gameState.current_room !== 1) {
-       toast('El Guardián te ha encontrado...', 'error');
-       localTimeRemaining = 0;
-       showGameOver();
+      toast('El Guardián te ha encontrado...', 'error');
+      localTimeRemaining = 0;
+      showGameOver();
     }
     guardianActive = false;
   }, 12000);
@@ -985,9 +1024,10 @@ async function submitLock() {
     renderAll();
   } else {
     playSFX('stone');
-    gameState = data.state;
-    toast(data.error, 'error');
-    if (gameState.error_count > 0 && gameState.error_count % 3 === 0) triggerSandTrap();
+    if (data.state) gameState = data.state;
+    toast(data.error || 'Código incorrecto', 'error');
+    if (gameState && gameState.error_count > 0 && gameState.error_count % 3 === 0) triggerSandTrap();
+    renderAll();
   }
 }
 
@@ -1001,18 +1041,18 @@ async function fetchLeaderboard() {
     const tbody = document.querySelector('#leaderboard-table tbody');
     if (!tbody) return;
     tbody.innerHTML = '';
-    
+
     let mixed = [];
-    if (data.leaderboard_hard) mixed = mixed.concat(data.leaderboard_hard.map(x=>({...x, diff:'Modo Faraón'})));
-    if (data.leaderboard) mixed = mixed.concat(data.leaderboard.map(x=>({...x, diff:'Normal'})));
-    
-    mixed.sort((a,b) => a.time_taken - b.time_taken);
-    
+    if (data.leaderboard_hard) mixed = mixed.concat(data.leaderboard_hard.map(x => ({ ...x, diff: 'Modo Faraón' })));
+    if (data.leaderboard) mixed = mixed.concat(data.leaderboard.map(x => ({ ...x, diff: 'Normal' })));
+
+    mixed.sort((a, b) => a.time_taken - b.time_taken);
+
     if (mixed.length === 0) {
       tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--muted); padding:1.5rem;">Aún no hay exploradores exitosos...<br><span style="font-size:0.75rem;">¡Sé el primero en escapar!</span></td></tr>';
       return;
     }
-    mixed.slice(0, 10).forEach((entry, idx) => {
+    mixed.slice(0, 3).forEach((entry, idx) => {
       const tr = document.createElement('tr');
       const timeStr = formatTimeRecord(entry.time_taken);
       const medal = idx === 0 ? '🥇 ' : idx === 1 ? '🥈 ' : idx === 2 ? '🥉 ' : '';
@@ -1025,7 +1065,7 @@ async function fetchLeaderboard() {
 function formatTimeRecord(seconds) {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1034,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Settings and Audio
   const btnSettings = document.getElementById('btn-settings');
   if (btnSettings) btnSettings.addEventListener('click', () => openModal('modal-settings'));
-  
+
   const bgMusic = document.getElementById('bg-music');
   const btnToggle = document.getElementById('btn-music-toggle');
   const volumeSlider = document.getElementById('music-volume');
@@ -1061,7 +1101,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Mega Expansion bindings
   const hintBtn = document.getElementById('btn-hint');
   if (hintBtn) hintBtn.addEventListener('click', triggerHint);
-  
+
   const submitAnubisBtn = document.getElementById('btn-submit-anubis');
   if (submitAnubisBtn) submitAnubisBtn.addEventListener('click', submitAnubis);
 
@@ -1072,10 +1112,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btn-resume').addEventListener('click', resumeGame);
   document.getElementById('btn-start').addEventListener('click', startGame);
+  document.getElementById('btn-back-to-login').addEventListener('click', goBackToLogin);
   document.getElementById('btn-restart-victory').addEventListener('click', restartGame);
   document.getElementById('btn-restart-gameover').addEventListener('click', restartGame);
 
-  [1,2,3,4,5,6,7].forEach(i => {
+  [1, 2, 3, 4, 5, 6, 7].forEach(i => {
     const btn = document.getElementById(`nav-btn-${i}`);
     if (btn) btn.addEventListener('click', () => moveToRoom(i));
   });
