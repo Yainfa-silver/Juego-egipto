@@ -11,6 +11,24 @@ let localTimeRemaining = 0;
 let selectedHiero = [];
 let currentEnigma = 0;
 let placedPieces = {};
+let username = '';
+let sfxVolume = 0.5;
+
+// Session Helpers (uses sessionStorage so data clears when tab/browser is closed)
+function saveSession(name, inGame) {
+  sessionStorage.setItem('egypt_user', name);
+  sessionStorage.setItem('egypt_in_game', inGame ? 'true' : 'false');
+}
+function getSession() {
+  return {
+    name: sessionStorage.getItem('egypt_user'),
+    inGame: sessionStorage.getItem('egypt_in_game') === 'true'
+  };
+}
+function clearSession() {
+  sessionStorage.removeItem('egypt_user');
+  sessionStorage.removeItem('egypt_in_game');
+}
 
 let currentAnubisPlacements = [null, null, null];
 let lockCylinders = [0, 0, 0];
@@ -23,7 +41,6 @@ let guardianStartTimeout = null;
 // ─── Web Audio API SFX ──────────────────────────────────────────
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
-let sfxVolume = 0.5;
 
 function playSFX(type) {
   if (!audioCtx) audioCtx = new AudioContext();
@@ -98,16 +115,19 @@ function toast(msg, type = 'info') {
 async function login() {
   playSFX('click');
   const input = document.getElementById('login-username');
-  const username = input.value.trim();
-  if (!username) { toast('Por favor, escribe tu nombre.', 'warning'); return; }
+  const typedName = input.value.trim();
+  if (!typedName) { toast('Por favor, escribe tu nombre.', 'warning'); return; }
 
-  const data = await api('POST', '/api/login', { username });
+  const data = await api('POST', '/api/login', { username: typedName });
   if (data.error) { toast(data.error, 'error'); return; }
 
   // Transition to start screen
+  username = data.username;
+  saveSession(username, false);
+  
   document.getElementById('screen-login').hidden = true;
   document.getElementById('screen-start').hidden = false;
-  document.getElementById('welcome-message').textContent = `Bienvenido, Viajero ${data.username}`;
+  document.getElementById('welcome-message').textContent = `Bienvenido, Arqueólogo ${username}`;
 
   const achEl = document.getElementById('achievements-display');
   if (achEl) {
@@ -139,6 +159,7 @@ async function resumeGame() {
   if (!data.success) { toast(data.error || 'Error al restaurar', 'error'); return; }
 
   gameState = data.state;
+  saveSession(username, true);
   localTimeRemaining = gameState.time_remaining;
   placedPieces = {};
 
@@ -158,6 +179,7 @@ async function startGame() {
   const data = await api('POST', '/api/start', { difficulty: diff });
   if (!data.success) { toast('Error al iniciar partida', 'error'); return; }
   gameState = data.state;
+  saveSession(username, true);
   localTimeRemaining = gameState.time_remaining;
   placedPieces = {};
 
@@ -224,6 +246,7 @@ function restartGame() {
   playSFX('click');
   clearInterval(timerInterval);
   stopGuardianSystem();
+  clearSession();
   gameState = null; selectedHiero = []; placedPieces = {};
   document.getElementById('screen-victory').hidden = true;
   document.getElementById('screen-gameover').hidden = true;
@@ -1129,4 +1152,47 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeAllModals();
   });
+  // Auto-recovery: always re-login to restore Flask server session, then go to correct screen
+  const session = getSession();
+  if (session.name) {
+    username = session.name;
+    api('POST', '/api/login', { username }).then(loginData => {
+      if (!loginData.username) { clearSession(); return; }
+
+      if (session.inGame) {
+        api('POST', '/api/resume').then(resumeData => {
+          if (resumeData.success) {
+            gameState = resumeData.state;
+            localTimeRemaining = gameState.time_remaining;
+            placedPieces = {};
+            document.getElementById('screen-login').hidden = true;
+            document.getElementById('screen-start').hidden = true;
+            document.getElementById('screen-game').hidden = false;
+            startTimer();
+            renderAll();
+            playMusic();
+            startGuardianSystem();
+            toast('⚓ Partida restaurada...', 'success');
+          } else {
+            saveSession(username, false);
+            goToStartScreen(loginData);
+          }
+        });
+      } else {
+        goToStartScreen(loginData);
+      }
+    });
+  }
 });
+
+function goToStartScreen(loginData) {
+  document.getElementById('welcome-message').textContent = `Bienvenido, Arqueólogo ${username}`;
+  document.getElementById('screen-login').hidden = true;
+  document.getElementById('screen-start').hidden = false;
+  if (loginData && loginData.has_active_game) {
+    document.getElementById('btn-resume').style.display = 'inline-block';
+    toast('⛺ Tienes una exploración en curso...', 'info');
+  } else {
+    document.getElementById('btn-resume').style.display = 'none';
+  }
+}

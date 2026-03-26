@@ -26,7 +26,7 @@
 
 /* ─── Reset ─────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; overflow-x: hidden; font-family: 'IM Fell English', serif; }
+html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'IM Fell English', serif; }
 
 body {
   background: var(--bg);
@@ -188,24 +188,27 @@ body {
 }
 
 .btn-back-absolute {
-  position: absolute;
-  top: 1.5rem;
-  left: 1.5rem;
-  background: transparent;
-  border: 1px solid rgba(201,162,39,0.3);
-  color: var(--muted);
-  padding: 0.4rem 0.8rem;
+  position: fixed;
+  top: 2rem;
+  left: 2rem;
+  background: rgba(26, 18, 8, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(201, 162, 39, 0.5);
+  color: var(--gold-light);
+  padding: 0.6rem 1.2rem;
   font-family: 'Cinzel', serif;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   border-radius: 4px;
   cursor: pointer;
   transition: var(--transition);
-  z-index: 10;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.8);
 }
 .btn-back-absolute:hover {
   border-color: var(--gold);
-  color: var(--gold);
-  background: rgba(201, 162, 39, 0.1);
+  color: #000;
+  background: var(--gold);
+  transform: scale(1.05);
 }
 
 .login-input {
